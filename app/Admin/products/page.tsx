@@ -25,6 +25,12 @@ export default function ProductsPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterActive, setFilterActive] = useState<"all" | "active" | "inactive">("all");
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; productId: number | null; imageUrls: string[]; productName: string }>({
+        isOpen: false,
+        productId: null,
+        imageUrls: [],
+        productName: ""
+    });
 
     useEffect(() => {
         checkAuth();
@@ -68,29 +74,66 @@ export default function ProductsPage() {
         }
     };
 
-    const deleteProduct = async (id: number, imageUrls: string[]) => {
-        if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+    const performDelete = async () => {
+        console.log("Starting performDelete with status:", deleteModal);
+
+        if (!deleteModal.productId) {
+            console.error("No productId found in deleteModal!");
             return;
         }
 
+        setLoading(true);
         try {
-            // Delete images from storage
-            for (const url of imageUrls) {
-                const urlParts = url.split("/product-images/");
-                if (urlParts.length === 2) {
-                    const filePath = urlParts[1];
-                    await supabase.storage.from("product-images").remove([filePath]);
+            // 1. Delete images from storage first (best effort)
+            if (deleteModal.imageUrls && deleteModal.imageUrls.length > 0) {
+                console.log("Cleaning up images:", deleteModal.imageUrls);
+                for (const url of deleteModal.imageUrls) {
+                    try {
+                        const urlParts = url.split("/product-images/");
+                        if (urlParts.length === 2) {
+                            const filePath = urlParts[1];
+                            const { error: sErr } = await supabase.storage.from("product-images").remove([filePath]);
+                            if (sErr) console.warn("Storage item skip (not found or error):", filePath);
+                        }
+                    } catch (err) {
+                        console.error("Image cleanup error:", err);
+                    }
                 }
             }
 
-            // Delete product from database
-            const { error } = await supabase.from("Products").delete().eq("id", id);
-            if (error) throw error;
+            // 2. Delete product from database
+            // We use both name and id just in case there's an RLS issue or id mismatch
+            console.log("Executing DB delete for ID:", deleteModal.productId);
+            const { error: dbError, data: deletedData } = await supabase
+                .from("Products")
+                .delete()
+                .eq("id", deleteModal.productId)
+                .select();
 
-            loadProducts();
-        } catch (err) {
-            console.error("Failed to delete product:", err);
-            alert("Failed to delete product");
+            if (dbError) {
+                console.error("Supabase DB Delete Error:", dbError);
+                throw dbError;
+            }
+
+            console.log("Supabase response - Data:", deletedData);
+
+            if (!deletedData || deletedData.length === 0) {
+                console.warn("Delete call returned success but 0 rows were removed. Checking column names...");
+                // Potential fallback or error message
+                throw new Error("Product not found in database. It may have already been deleted or there is an ID mismatch.");
+            }
+
+            // 3. Reset modal state immediately
+            setDeleteModal({ isOpen: false, productId: null, imageUrls: [], productName: "" });
+
+            // 4. Await data refresh
+            await loadProducts();
+
+        } catch (err: any) {
+            console.error("Critical delete failure:", err);
+            alert("Delete failed: " + (err.message || "Unknown database error"));
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -101,13 +144,13 @@ export default function ProductsPage() {
 
         const matchesFilter =
             filterActive === "all" ||
-            (filterActive === "active" && product.is_active) ||
-            (filterActive === "inactive" && !product.is_active);
+            (filterActive === "active" && product.item_number > 0) ||
+            (filterActive === "inactive" && product.item_number <= 0);
 
         return matchesSearch && matchesFilter;
     });
 
-    if (loading) {
+    if (loading && products.length === 0) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-amber-50 to-stone-100">
                 <div className="text-center">
@@ -122,7 +165,51 @@ export default function ProductsPage() {
     }
 
     return (
-        <div className="w-full">
+        <div className="w-full relative">
+            {/* Custom Delete Modal Overlay */}
+            {deleteModal.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+                        <div className="p-8 text-center">
+                            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
+                                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </div>
+                            <h3 className="text-2xl font-bold text-stone-900 mb-2">Delete Product?</h3>
+                            <p className="text-stone-500 mb-8 leading-relaxed">
+                                Are you sure you want to delete <span className="font-bold text-stone-800">"{deleteModal.productName}"</span>?
+                                This will permanently remove the data and all associated images.
+                            </p>
+
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <button
+                                    onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                                    className="flex-1 px-6 py-3 rounded-xl font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-all border border-stone-200"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={performDelete}
+                                    disabled={loading}
+                                    className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 shadow-lg shadow-red-200 transition-all flex items-center justify-center"
+                                >
+                                    {loading ? (
+                                        <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                    ) : "Yes, Delete It"}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="bg-stone-50 p-4 text-center">
+                            <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold">This action cannot be undone</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <main className="p-8">
                 <header className="mb-8 flex justify-between items-center">
                     <div>
@@ -140,54 +227,54 @@ export default function ProductsPage() {
                     </Link>
                 </header>
 
-                <div className="container mx-auto px-6 py-8">
+                <div className="container mx-auto">
                     {/* Filters & Search */}
-                    <div className="bg-white rounded-xl shadow-md border border-stone-200 p-6 mb-6">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 mb-8">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                             {/* Search */}
                             <div className="flex-1 max-w-md">
                                 <div className="relative">
-                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                     <input
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder="Search by name or item number..."
-                                        className="w-full pl-10 pr-4 py-2 rounded-lg border-2 border-stone-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all"
+                                        placeholder="Search products..."
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-stone-100 focus:border-amber-500 focus:ring-4 focus:ring-amber-50 font-medium outline-none transition-all text-stone-900 bg-stone-50"
                                     />
                                 </div>
                             </div>
 
                             {/* Filter Buttons */}
-                            <div className="flex gap-2">
+                            <div className="flex p-1 bg-stone-100 rounded-xl">
                                 <button
                                     onClick={() => setFilterActive("all")}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterActive === "all"
-                                        ? "bg-amber-600 text-white shadow-md"
-                                        : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${filterActive === "all"
+                                        ? "bg-white text-amber-700 shadow-sm"
+                                        : "text-stone-500 hover:text-stone-700"
                                         }`}
                                 >
-                                    All ({products.length})
+                                    All
                                 </button>
                                 <button
                                     onClick={() => setFilterActive("active")}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterActive === "active"
-                                        ? "bg-green-600 text-white shadow-md"
-                                        : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${filterActive === "active"
+                                        ? "bg-white text-green-700 shadow-sm"
+                                        : "text-stone-500 hover:text-stone-700"
                                         }`}
                                 >
-                                    Active ({products.filter((p) => p.is_active).length})
+                                    In Stock
                                 </button>
                                 <button
                                     onClick={() => setFilterActive("inactive")}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-all ${filterActive === "inactive"
-                                        ? "bg-red-600 text-white shadow-md"
-                                        : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${filterActive === "inactive"
+                                        ? "bg-white text-red-700 shadow-sm"
+                                        : "text-stone-500 hover:text-stone-700"
                                         }`}
                                 >
-                                    Inactive ({products.filter((p) => !p.is_active).length})
+                                    Out of Stock
                                 </button>
                             </div>
                         </div>
@@ -195,104 +282,113 @@ export default function ProductsPage() {
 
                     {/* Products Grid */}
                     {filteredProducts.length === 0 ? (
-                        <div className="bg-white rounded-xl shadow-md border border-stone-200 p-12 text-center">
-                            <svg className="w-16 h-16 text-stone-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                            </svg>
-                            <p className="text-stone-600 text-lg font-medium">No products found</p>
-                            <p className="text-stone-500 text-sm mt-2">
-                                {searchQuery ? "Try adjusting your search" : "Get started by adding your first product"}
-                            </p>
+                        <div className="bg-white rounded-3xl shadow-sm border border-stone-200 p-20 text-center">
+                            <div className="w-24 h-24 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <svg className="w-12 h-12 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-stone-800">No products found</h3>
+                            <p className="text-stone-500 mt-2">Try adjusting your filters or search terms.</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                             {filteredProducts.map((product) => (
                                 <div
                                     key={product.id}
-                                    className="bg-white rounded-xl shadow-md border border-stone-200 overflow-hidden hover:shadow-xl transition-shadow duration-200"
+                                    className="group bg-white rounded-3xl shadow-sm hover:shadow-2xl hover:shadow-amber-100 border border-stone-200 overflow-hidden transition-all duration-300 transform hover:-translate-y-1"
                                 >
-                                    {/* Product Image */}
-                                    <div className="relative h-48 bg-stone-100">
+                                    {/* Image Container */}
+                                    <div className="relative h-64 bg-stone-100 overflow-hidden">
                                         {product.image_urls && product.image_urls[0] ? (
                                             <img
                                                 src={product.image_urls[0]}
                                                 alt={product.Name}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
-                                                <svg className="w-16 h-16 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                <svg className="w-16 h-16 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                 </svg>
                                             </div>
                                         )}
 
-                                        {/* Status Badge */}
-                                        <div className="absolute top-3 right-3">
-                                            <span
-                                                className={`px-3 py-1 rounded-full text-xs font-semibold ${product.is_active
-                                                    ? "bg-green-500 text-white"
-                                                    : "bg-red-500 text-white"
-                                                    }`}
-                                            >
-                                                {product.is_active ? "Active" : "Inactive"}
-                                            </span>
-                                        </div>
-
-                                        {/* Discount Badge */}
-                                        {product.discount && (
-                                            <div className="absolute top-3 left-3">
-                                                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500 text-white">
-                                                    On Sale
-                                                </span>
+                                        {/* Status Tag */}
+                                        <div className="absolute top-4 right-4">
+                                            <div className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-md border ${product.item_number > 0
+                                                ? "bg-green-500/90 text-white border-green-400"
+                                                : "bg-red-500/90 text-white border-red-400"
+                                                }`}>
+                                                {product.item_number > 0 ? "IN STOCK" : "OUT OF STOCK"}
                                             </div>
-                                        )}
-                                    </div>
-
-                                    {/* Product Info */}
-                                    <div className="p-5">
-                                        <div className="mb-3">
-                                            <h3 className="font-bold text-lg text-stone-900 mb-1 line-clamp-1">
-                                                {product.Name}
-                                            </h3>
-                                            <p className="text-xs text-stone-500">Stock: {product.item_number}</p>
                                         </div>
 
-                                        <div className="mb-4">
-                                            <div className="flex items-baseline gap-2">
-                                                <span className="text-2xl font-bold text-amber-700">
-                                                    ${product.discount && product.discount_price ? product.discount_price : product.real_price}
-                                                </span>
-                                                {product.discount && product.discount_price && (
-                                                    <span className="text-sm text-stone-500 line-through">
-                                                        ${product.real_price}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <p className="text-xs text-stone-600 mt-1">
-                                                Sizes: {product.sizes_available?.join(", ") || "N/A"}
-                                            </p>
-                                        </div>
-
-                                        {/* Actions */}
-                                        <div className="flex gap-2">
+                                        {/* Quick Overlay Action */}
+                                        <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                             <Link
                                                 href={`/Admin/products/edit/${product.id}`}
-                                                className="flex-1 bg-amber-100 text-amber-900 px-3 py-2 rounded-lg font-medium hover:bg-amber-200 transition-colors text-center text-sm"
+                                                className="bg-white text-stone-900 px-6 py-2 rounded-full font-bold shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300"
                                             >
-                                                Edit
+                                                Edit Product
                                             </Link>
+                                        </div>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="p-6">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex-1">
+                                                <h3 className="font-bold text-xl text-stone-900 truncate pr-2">
+                                                    {product.Name}
+                                                </h3>
+                                                <div className="flex items-center mt-1 space-x-2">
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 bg-stone-100 text-stone-500 rounded uppercase tracking-wider">
+                                                        Qty: {product.item_number}
+                                                    </span>
+                                                    {product.discount && (
+                                                        <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-600 rounded uppercase tracking-wider">
+                                                            Discount Active
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-2xl font-black text-amber-900">
+                                                    ${product.discount && product.discount_price ? product.discount_price : product.real_price}
+                                                </div>
+                                                {product.discount && (
+                                                    <div className="text-xs text-stone-400 line-through font-bold">
+                                                        ${product.real_price}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-6 border-t border-stone-100 flex items-center justify-between">
+                                            <div className="flex -space-x-1">
+                                                {product.sizes_available?.slice(0, 3).map(s => (
+                                                    <div key={s} className="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-600">
+                                                        {s}
+                                                    </div>
+                                                ))}
+                                                {product.sizes_available?.length > 3 && (
+                                                    <div className="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-400">
+                                                        +{product.sizes_available.length - 3}
+                                                    </div>
+                                                )}
+                                            </div>
+
                                             <button
-                                                onClick={() => toggleProductStatus(product.id, product.is_active)}
-                                                className="flex-1 bg-stone-100 text-stone-700 px-3 py-2 rounded-lg font-medium hover:bg-stone-200 transition-colors text-sm"
+                                                onClick={() => setDeleteModal({
+                                                    isOpen: true,
+                                                    productId: product.id,
+                                                    imageUrls: product.image_urls,
+                                                    productName: product.Name
+                                                })}
+                                                className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all group/del"
                                             >
-                                                {product.is_active ? "Deactivate" : "Activate"}
-                                            </button>
-                                            <button
-                                                onClick={() => deleteProduct(product.id, product.image_urls)}
-                                                className="bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium hover:bg-red-200 transition-colors text-sm"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-6 h-6 transform group-hover/del:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
                                             </button>
@@ -304,6 +400,9 @@ export default function ProductsPage() {
                     )}
                 </div>
             </main>
+            <footer className="mt-20 p-8 text-center text-stone-400 text-xs font-medium border-t border-stone-100">
+                GEEZ SHOE ADMIN • INVENTORY MANAGEMENT SYSTEM v2.0
+            </footer>
         </div>
     );
 }

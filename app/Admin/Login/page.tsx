@@ -104,7 +104,7 @@ const LoginPage = () => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition disabled:bg-stone-100 disabled:cursor-not-allowed text-stone-800"
+                            className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition disabled:bg-stone-100 disabled:cursor-not-allowed text-stone-900 bg-white"
                             placeholder="admin@example.com"
                             required
                             disabled={loading}
@@ -118,7 +118,7 @@ const LoginPage = () => {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition disabled:bg-stone-100 disabled:cursor-not-allowed text-stone-800"
+                            className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition disabled:bg-stone-100 disabled:cursor-not-allowed text-stone-900 bg-white"
                             placeholder="Enter your password"
                             required
                             disabled={loading}

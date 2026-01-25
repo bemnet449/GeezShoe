@@ -111,22 +111,17 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
     //  EFFECTS
     // ─────────────────────────────────────────────────────────────────────────────
 
-    // Auto-deactivate if out of stock
+    // Auto-update stock status based on quantity
     useEffect(() => {
-        const stock = Number(formData.item_number);
-        if (formData.item_number === "" || isNaN(stock)) return;
+        // Treat empty string as 0 stock for status calculation
+        const stock = formData.item_number === "" ? 0 : Number(formData.item_number);
+        if (isNaN(stock)) return;
 
         setFormData(prev => {
-            // Auto-hide when out of stock
-            if (stock <= 0 && prev.is_active) {
-                return { ...prev, is_active: false };
+            const shouldBeActive = stock > 0;
+            if (prev.is_active !== shouldBeActive) {
+                return { ...prev, is_active: shouldBeActive };
             }
-
-            // Auto-show when restocked
-            if (stock > 0 && !prev.is_active) {
-                return { ...prev, is_active: true };
-            }
-
             return prev;
         });
     }, [formData.item_number]);
@@ -246,7 +241,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
 
                 image_urls: formData.image_urls,
                 sizes_available: formData.sizes_available,
-                is_active: formData.is_active,
+                is_active: (toNum(formData.item_number) ?? 0) > 0,
             };
 
             // Log payload for debugging
@@ -334,7 +329,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
                             value={formData.name}
                             onChange={handleChange}
                             onBlur={() => handleBlur("name")}
-                            className={`w-full p-3 rounded-lg border ${touched.name && validationErrors.name ? 'border-red-500 bg-red-50' : 'border-stone-200'} focus:ring-2 focus:ring-amber-400 focus:border-transparent outline-none transition-all`}
+                            className={`w-full p-3 rounded-lg border text-stone-900 ${touched.name && validationErrors.name ? "border-red-500 bg-red-50" : "border-stone-200 bg-white"} focus:ring-2 focus:ring-amber-400 focus:border-transparent outline-none transition-all`}
                             placeholder="e.g. Vintage Leather Boots"
                         />
                         {renderError("name")}
@@ -348,7 +343,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
                             onChange={handleChange}
                             onBlur={() => handleBlur("description")}
                             rows={3}
-                            className={`w-full p-3 rounded-lg border ${touched.description && validationErrors.description ? 'border-red-500 bg-red-50' : 'border-stone-200'} focus:ring-2 focus:ring-amber-400 focus:border-transparent outline-none transition-all resize-none`}
+                            className={`w-full p-3 rounded-lg border text-stone-900 ${touched.description && validationErrors.description ? "border-red-500 bg-red-50" : "border-stone-200 bg-white"} focus:ring-2 focus:ring-amber-400 focus:border-transparent outline-none transition-all resize-none`}
                             placeholder="Describe the material, style, and fit..."
                         />
                         {renderError("description")}
@@ -362,7 +357,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
                             value={formData.item_number}
                             onChange={handleChange}
                             onBlur={() => handleBlur("item_number")}
-                            className={`w-full p-3 rounded-lg border ${touched.item_number && validationErrors.item_number ? 'border-red-500 bg-red-50' : 'border-stone-200'} focus:ring-2 focus:ring-amber-400 focus:border-transparent outline-none transition-all`}
+                            className={`w-full p-3 rounded-lg border text-stone-900 ${touched.item_number && validationErrors.item_number ? "border-red-500 bg-red-50" : "border-stone-200 bg-white"} focus:ring-2 focus:ring-amber-400 focus:border-transparent outline-none transition-all`}
                             placeholder="0"
                         />
                         <p className="text-xs text-stone-500 mt-1">If 0, functionality auto-hides the product.</p>
@@ -387,7 +382,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
                             value={formData.real_price}
                             onChange={handleChange}
                             onBlur={() => handleBlur("real_price")}
-                            className={`w-full p-3 rounded-lg border ${touched.real_price && validationErrors.real_price ? 'border-red-500 bg-red-50' : 'border-stone-200'} ${formData.discount ? 'line-through text-stone-400' : ''} focus:ring-2 focus:ring-amber-400 outline-none transition-all`}
+                            className={`w-full p-3 rounded-lg border ${touched.real_price && validationErrors.real_price ? "border-red-500 bg-red-50" : "border-stone-200 bg-white"} ${formData.discount ? "line-through text-stone-400" : "text-stone-900"} focus:ring-2 focus:ring-amber-400 outline-none transition-all`}
                             placeholder="0.00"
                         />
                         {renderError("real_price")}
@@ -402,7 +397,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
                                 value={formData.fake_price}
                                 onChange={handleChange}
                                 onBlur={() => handleBlur("fake_price")}
-                                className={`w-full p-3 rounded-lg border ${touched.fake_price && validationErrors.fake_price ? 'border-red-500 bg-red-50' : 'border-stone-200'} focus:ring-2 focus:ring-amber-400 outline-none transition-all`}
+                                className={`w-full p-3 rounded-lg border text-stone-900 ${touched.fake_price && validationErrors.fake_price ? "border-red-500 bg-red-50" : "border-stone-200 bg-white"} focus:ring-2 focus:ring-amber-400 outline-none transition-all`}
                                 placeholder="Higher than regular..."
                             />
                             {renderError("fake_price")}
@@ -433,7 +428,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
                                     name="discount_title"
                                     value={formData.discount_title}
                                     onChange={handleChange}
-                                    className="w-full p-2 rounded border border-amber-300 focus:ring-2 focus:ring-amber-500 outline-none"
+                                    className="w-full p-2 rounded border border-amber-300 bg-white text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
                                     placeholder="e.g. FLASH SALE"
                                 />
                             </div>
@@ -445,7 +440,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
                                     value={formData.discount_price}
                                     onChange={handleChange}
                                     onBlur={() => handleBlur("discount_price")}
-                                    className={`w-full p-2 rounded border ${touched.discount_price && validationErrors.discount_price ? 'border-red-500 bg-white' : 'border-amber-300'} focus:ring-2 focus:ring-amber-500 outline-none`}
+                                    className={`w-full p-2 rounded border text-stone-900 ${touched.discount_price && validationErrors.discount_price ? "border-red-500 bg-red-50" : "border-amber-300 bg-white"} focus:ring-2 focus:ring-amber-500 outline-none`}
                                     placeholder="Lower than regular..."
                                 />
                                 {renderError("discount_price")}
@@ -504,19 +499,17 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
                 </div>
 
                 <div className="border-t border-stone-100 pt-4">
-                    <label className="flex items-center space-x-3 cursor-pointer group">
-                        <input
-                            type="checkbox"
-                            name="is_active"
-                            checked={formData.is_active}
-                            onChange={handleChange}
-                            className="w-5 h-5 text-amber-600 rounded focus:ring-amber-500 border-gray-300"
-                        />
+                    <div className="flex items-center space-x-3 p-3 rounded-lg bg-stone-50 border border-stone-100">
+                        <div className={`w-3 h-3 rounded-full ${formData.is_active ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-500'}`} />
                         <div>
-                            <span className="block font-semibold text-stone-800">Active (Visible to Customers)</span>
-                            <span className="text-xs text-stone-500">Uncheck to draft or hide this product.</span>
+                            <span className="block font-semibold text-stone-800">
+                                {formData.is_active ? "In Stock (Visible to Customers)" : "Out of Stock (Hidden)"}
+                            </span>
+                            <span className="text-xs text-stone-500">
+                                Status is managed automatically based on Stock Quantity.
+                            </span>
                         </div>
-                    </label>
+                    </div>
                 </div>
             </div>
 
