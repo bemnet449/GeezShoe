@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import ShopNavbar from "@/components/ShopNavbar";
+import { addToCart } from "@/utils/placeOrder";
+import { showToast } from "@/components/Toast";
 
 interface Product {
     id: number;
@@ -197,30 +199,55 @@ export default function ProductDetailPage() {
                         </div>
 
                         {/* Quantity */}
-                        <div className="mb-10 flex items-center space-x-6">
-                            <h3 className="text-xs font-black uppercase tracking-widest text-stone-400">Quantity</h3>
-                            <div className={`flex items-center border-2 rounded-xl overflow-hidden bg-white transition-opacity ${!selectedSize ? 'opacity-40 pointer-events-none border-stone-100' : 'border-stone-200'}`}>
+                        <div className="mb-10">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-stone-400">Quantity</h3>
+                                {!selectedSize && (
+                                    <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider animate-pulse">
+                                        Select size first
+                                    </span>
+                                )}
+                            </div>
+                            <div className={`inline-flex items-center gap-4 bg-white border-2 rounded-2xl p-2 transition-all duration-300 ${!selectedSize
+                                ? 'border-stone-200 opacity-50'
+                                : 'border-amber-600 shadow-lg shadow-amber-600/10'
+                                }`}>
                                 <button
-                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    disabled={!selectedSize}
-                                    className="w-12 h-12 flex items-center justify-center hover:bg-stone-50 transition-colors border-r border-stone-200 disabled:cursor-not-allowed"
+                                    type="button"
+                                    onClick={() => {
+                                        if (selectedSize && quantity > 1) {
+                                            setQuantity(quantity - 1);
+                                        }
+                                    }}
+                                    disabled={!selectedSize || quantity <= 1}
+                                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl transition-all duration-200 ${!selectedSize || quantity <= 1
+                                        ? 'bg-stone-100 text-stone-300 cursor-not-allowed'
+                                        : 'bg-stone-900 text-white hover:bg-stone-800 hover:scale-110 active:scale-95 cursor-pointer'
+                                        }`}
                                 >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+                                    −
                                 </button>
-                                <span className="w-12 h-12 flex items-center justify-center font-bold text-stone-900">{quantity}</span>
+
+                                <div className="w-16 text-center">
+                                    <span className="text-2xl font-black text-stone-900">{quantity}</span>
+                                </div>
+
                                 <button
-                                    onClick={() => setQuantity(Math.min(product.item_number, quantity + 1))}
-                                    disabled={!selectedSize}
-                                    className="w-12 h-12 flex items-center justify-center hover:bg-stone-50 transition-colors border-l border-stone-200 disabled:cursor-not-allowed"
+                                    type="button"
+                                    onClick={() => {
+                                        if (selectedSize && quantity < product.item_number) {
+                                            setQuantity(quantity + 1);
+                                        }
+                                    }}
+                                    disabled={!selectedSize || quantity >= product.item_number}
+                                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl transition-all duration-200 ${!selectedSize || quantity >= product.item_number
+                                        ? 'bg-stone-100 text-stone-300 cursor-not-allowed'
+                                        : 'bg-amber-600 text-white hover:bg-amber-700 hover:scale-110 active:scale-95 cursor-pointer'
+                                        }`}
                                 >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                    +
                                 </button>
                             </div>
-                            {!selectedSize && (
-                                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider animate-pulse">
-                                    Select size first
-                                </span>
-                            )}
                         </div>
 
                         {/* Actions */}
@@ -228,8 +255,25 @@ export default function ProductDetailPage() {
                             <button
                                 disabled={product.item_number <= 0 || !selectedSize}
                                 onClick={() => {
-                                    console.log("Add to Cart", { product: product.Name, size: selectedSize, quantity });
-                                    // Add to cart logic here
+                                    if (!selectedSize) return;
+
+                                    addToCart({
+                                        id: String(product.id),
+                                        name: product.Name,
+                                        price: product.discount && product.discount_price
+                                            ? product.discount_price
+                                            : product.real_price,
+                                        qty: quantity,
+                                        size: selectedSize,
+                                        image: product.image_urls?.[0] || "",
+                                    });
+
+                                    // Show success toast notification
+                                    showToast(`Added ${quantity} ${product.Name} (Size: EU ${selectedSize}) to cart!`, "success");
+
+                                    // Reset selections
+                                    setQuantity(1);
+                                    setSelectedSize(null);
                                 }}
                                 className={`flex-[1.5] flex items-center justify-center space-x-3 py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${product.item_number > 0 && selectedSize
                                     ? "bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20"
@@ -243,8 +287,21 @@ export default function ProductDetailPage() {
                             <button
                                 disabled={product.item_number <= 0 || !selectedSize}
                                 onClick={() => {
-                                    console.log("Buy Now", { product: product.Name, size: selectedSize, quantity });
-                                    // Redirect to ordering logic here
+                                    if (!selectedSize) return;
+
+                                    // Add to cart first
+                                    addToCart({
+                                        id: String(product.id),
+                                        name: product.Name,
+                                        price: product.discount && product.discount_price
+                                            ? product.discount_price
+                                            : product.real_price,
+                                        qty: quantity,
+                                        size: selectedSize,
+                                        image: product.image_urls?.[0] || "",
+                                    });
+
+                                    // Redirect to checkout
                                     router.push("/clients/checkout");
                                 }}
                                 className={`flex-1 flex items-center justify-center py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${product.item_number > 0 && selectedSize

@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getCartItemCount } from "@/utils/placeOrder";
 
 export default function ShopNavbar() {
     const [scrolled, setScrolled] = useState(false);
+    const [cartCount, setCartCount] = useState(0);
+    const router = useRouter();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -12,6 +16,31 @@ export default function ShopNavbar() {
         };
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    useEffect(() => {
+        // Update cart count on mount and when localStorage changes
+        const updateCartCount = () => {
+            setCartCount(getCartItemCount());
+        };
+
+        updateCartCount();
+
+        // Listen for storage events (when cart is updated in other tabs)
+        window.addEventListener("storage", updateCartCount);
+
+        // Custom event for same-tab updates
+        const handleCartUpdate = () => updateCartCount();
+        window.addEventListener("cartUpdated", handleCartUpdate);
+
+        // Poll for updates (fallback for same-tab changes)
+        const interval = setInterval(updateCartCount, 1000);
+
+        return () => {
+            window.removeEventListener("storage", updateCartCount);
+            window.removeEventListener("cartUpdated", handleCartUpdate);
+            clearInterval(interval);
+        };
     }, []);
 
     return (
@@ -30,7 +59,10 @@ export default function ShopNavbar() {
                     <Link href="/clients/shop" className="text-sm font-bold uppercase tracking-widest text-stone-600 hover:text-amber-600 transition-colors">
                         Shop
                     </Link>
-                    <button className="relative group p-2">
+                    <button
+                        onClick={() => router.push("/clients/checkout")}
+                        className="relative group p-2"
+                    >
                         <svg
                             className="w-6 h-6 text-stone-900 group-hover:text-amber-600 transition-colors"
                             fill="none"
@@ -44,9 +76,11 @@ export default function ShopNavbar() {
                                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
                             />
                         </svg>
-                        <span className="absolute top-0 right-0 bg-amber-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                            0
-                        </span>
+                        {cartCount > 0 && (
+                            <span className="absolute top-0 right-0 bg-amber-600 text-white text-[10px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                                {cartCount > 99 ? "99+" : cartCount}
+                            </span>
+                        )}
                     </button>
                 </div>
             </div>
