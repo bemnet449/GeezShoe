@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import ShopNavbar from "@/components/ShopNavbar";
 
 interface Product {
     id: number;
     Name: string;
+    description: string;
     real_price: number;
+    fake_price: number | null;
     discount: boolean;
     discount_price: number | null;
     image_urls: string[];
@@ -25,6 +28,7 @@ export default function ProductDetailPage() {
     const [activeImage, setActiveImage] = useState(0);
     const [selectedSize, setSelectedSize] = useState<number | null>(null);
     const [quantity, setQuantity] = useState(1);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         async function loadProduct() {
@@ -59,29 +63,70 @@ export default function ProductDetailPage() {
     if (!product) return null;
 
     return (
-        <div className="pt-32 pb-24 min-h-screen bg-stone-50">
-            <div className="container mx-auto px-6">
+        <div className="min-h-screen bg-stone-50">
+            <ShopNavbar />
+
+            {/* Image Preview Modal */}
+            {isModalOpen && (
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/95 backdrop-blur-xl animate-in fade-in duration-300"
+                    onClick={() => setIsModalOpen(false)}
+                >
+                    <button
+                        className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors"
+                        onClick={() => setIsModalOpen(false)}
+                    >
+                        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <div className="relative w-full max-w-5xl aspect-square mx-6">
+                        <Image
+                            src={product.image_urls[activeImage]}
+                            alt={product.Name}
+                            fill
+                            className="object-contain"
+                            priority
+                        />
+                    </div>
+                </div>
+            )}
+
+            <div className="pt-32 pb-24 container mx-auto px-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
                     {/* Images Gallery */}
                     <div className="space-y-6">
-                        <div className="relative aspect-square overflow-hidden rounded-[2.5rem] bg-white border border-stone-100 shadow-xl shadow-stone-200/50">
+                        <div
+                            className="relative aspect-square overflow-hidden rounded-[2.5rem] bg-white border border-stone-100 shadow-xl shadow-stone-200/50 cursor-zoom-in group"
+                            onClick={() => setIsModalOpen(true)}
+                        >
                             {product.image_urls?.[activeImage] ? (
                                 <Image
                                     src={product.image_urls[activeImage]}
                                     alt={product.Name}
                                     fill
-                                    className="object-cover animate-in fade-in zoom-in-95 duration-500"
+                                    className="object-cover animate-in fade-in zoom-in-95 duration-500 group-hover:scale-105 transition-transform duration-700"
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-stone-300">
                                     No Image
                                 </div>
                             )}
+
+                            {/* Prominent Sale Tag */}
                             {product.discount && (
-                                <div className="absolute top-8 left-8 bg-amber-600 text-white text-xs font-bold px-4 py-2 rounded-full z-10 shadow-lg">
-                                    SALE
+                                <div className="absolute top-8 left-8 bg-amber-600 text-white text-[10px] font-black px-6 py-2 rounded-full z-10 shadow-lg uppercase tracking-[0.2em] animate-bounce">
+                                    Exclusive Offer
                                 </div>
                             )}
+
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 flex items-center justify-center">
+                                <div className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-sm p-4 rounded-full shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                                    <svg className="w-6 h-6 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-4 gap-4">
@@ -101,20 +146,31 @@ export default function ProductDetailPage() {
                     {/* Product Info */}
                     <div className="flex flex-col">
                         <div className="mb-8">
-                            <h2 className="text-[10px] uppercase font-bold tracking-[0.5em] text-amber-600 mb-4">Premium Footwear</h2>
-                            <h1 className="text-5xl font-black text-stone-900 mb-4 tracking-tight leading-tight uppercase">{product.Name}</h1>
-                            <div className="flex items-center space-x-4 mb-6">
-                                <div className="text-3xl font-black text-stone-900 italic">
-                                    ${product.discount && product.discount_price ? product.discount_price : product.real_price}
-                                </div>
+                            <div className="flex items-center space-x-3 mb-4">
+                                <h2 className="text-[10px] uppercase font-bold tracking-[0.5em] text-amber-600">Premium Footwear</h2>
                                 {product.discount && (
-                                    <div className="text-xl text-stone-400 line-through font-bold">
-                                        ${product.real_price}
-                                    </div>
+                                    <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                                        On Sale
+                                    </span>
                                 )}
                             </div>
-                            <p className="text-stone-500 leading-relaxed text-lg max-w-xl">
-                                Hand-crafted with meticulous attention to detail using the finest Ethiopian leather. This pair offers unparalleled comfort and style that transcends seasons.
+                            <h1 className="text-5xl font-black text-stone-900 mb-4 tracking-tight leading-tight uppercase">{product.Name}</h1>
+                            <div className="flex items-center space-x-6 mb-6">
+                                <div className="text-4xl font-black text-stone-900 italic">
+                                    ${product.discount && product.discount_price ? product.discount_price : product.real_price}
+                                </div>
+                                {product.discount ? (
+                                    <div className="text-2xl text-stone-400 line-through font-bold">
+                                        ${product.real_price}
+                                    </div>
+                                ) : product.fake_price && Number(product.fake_price) > Number(product.real_price) ? (
+                                    <div className="text-2xl text-stone-400 line-through font-bold">
+                                        ${product.fake_price}
+                                    </div>
+                                ) : null}
+                            </div>
+                            <p className="text-stone-600 leading-relaxed text-lg max-w-xl font-medium">
+                                {product.description || "Hand-crafted with meticulous attention to detail using the finest Ethiopian leather. This pair offers unparalleled comfort and style that transcends seasons."}
                             </p>
                         </div>
 
@@ -130,8 +186,8 @@ export default function ProductDetailPage() {
                                         key={size}
                                         onClick={() => setSelectedSize(size)}
                                         className={`w-14 h-14 rounded-xl flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 ${selectedSize === size
-                                                ? "bg-amber-600 text-white border-amber-600 shadow-lg shadow-amber-600/30"
-                                                : "bg-white text-stone-600 border-stone-200 hover:border-amber-600"
+                                            ? "bg-amber-600 text-white border-amber-600 shadow-lg shadow-amber-600/30"
+                                            : "bg-white text-stone-600 border-stone-200 hover:border-amber-600"
                                             }`}
                                     >
                                         {size}
@@ -143,40 +199,60 @@ export default function ProductDetailPage() {
                         {/* Quantity */}
                         <div className="mb-10 flex items-center space-x-6">
                             <h3 className="text-xs font-black uppercase tracking-widest text-stone-400">Quantity</h3>
-                            <div className="flex items-center border-2 border-stone-200 rounded-xl overflow-hidden bg-white">
+                            <div className={`flex items-center border-2 rounded-xl overflow-hidden bg-white transition-opacity ${!selectedSize ? 'opacity-40 pointer-events-none border-stone-100' : 'border-stone-200'}`}>
                                 <button
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="w-12 h-12 flex items-center justify-center hover:bg-stone-50 transition-colors border-r border-stone-200"
+                                    disabled={!selectedSize}
+                                    className="w-12 h-12 flex items-center justify-center hover:bg-stone-50 transition-colors border-r border-stone-200 disabled:cursor-not-allowed"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
                                 </button>
                                 <span className="w-12 h-12 flex items-center justify-center font-bold text-stone-900">{quantity}</span>
                                 <button
                                     onClick={() => setQuantity(Math.min(product.item_number, quantity + 1))}
-                                    className="w-12 h-12 flex items-center justify-center hover:bg-stone-50 transition-colors border-l border-stone-200"
+                                    disabled={!selectedSize}
+                                    className="w-12 h-12 flex items-center justify-center hover:bg-stone-50 transition-colors border-l border-stone-200 disabled:cursor-not-allowed"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                                 </button>
                             </div>
-                            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest leading-none">
-                                {product.item_number} pieces left
-                            </span>
+                            {!selectedSize && (
+                                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider animate-pulse">
+                                    Select size first
+                                </span>
+                            )}
                         </div>
 
                         {/* Actions */}
                         <div className="flex flex-col sm:flex-row gap-4 mb-12">
                             <button
                                 disabled={product.item_number <= 0 || !selectedSize}
-                                className={`flex-1 flex items-center justify-center space-x-3 py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${product.item_number > 0 && selectedSize
-                                        ? "bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20"
-                                        : "bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200 shadow-none"
+                                onClick={() => {
+                                    console.log("Add to Cart", { product: product.Name, size: selectedSize, quantity });
+                                    // Add to cart logic here
+                                }}
+                                className={`flex-[1.5] flex items-center justify-center space-x-3 py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${product.item_number > 0 && selectedSize
+                                    ? "bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20"
+                                    : "bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200 shadow-none"
                                     }`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                                 <span>Add To Cart</span>
                             </button>
-                            <button className="w-16 h-16 rounded-2xl border-2 border-stone-900 flex items-center justify-center text-stone-900 hover:bg-stone-900 hover:text-white transition-all duration-300">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+
+                            <button
+                                disabled={product.item_number <= 0 || !selectedSize}
+                                onClick={() => {
+                                    console.log("Buy Now", { product: product.Name, size: selectedSize, quantity });
+                                    // Redirect to ordering logic here
+                                    router.push("/clients/checkout");
+                                }}
+                                className={`flex-1 flex items-center justify-center py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${product.item_number > 0 && selectedSize
+                                    ? "bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20"
+                                    : "bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200 shadow-none"
+                                    }`}
+                            >
+                                <span>Buy Now</span>
                             </button>
                         </div>
 

@@ -40,8 +40,9 @@ export default function Navbar() {
     ];
 
     const isAdmin = pathname.startsWith("/Admin");
+    const isClient = pathname.startsWith("/clients");
 
-    if (isAdmin) return null;
+    if (isAdmin || isClient) return null;
 
     return (
         <div
