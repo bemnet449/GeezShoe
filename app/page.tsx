@@ -12,6 +12,7 @@ export default function Home() {
             src="/geez_shoe_hero_1769329293170.png"
             alt="Premium Geez Shoes"
             fill
+            sizes="100vw"
             className="object-cover brightness-50 animate-ken-burns"
             priority
           />
@@ -77,6 +78,7 @@ export default function Home() {
                   src="/geez_shoe_hero_1769329293170.png"
                   alt="Geez Shoe Craftsmanship"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                 />
               </div>

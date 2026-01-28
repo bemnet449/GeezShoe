@@ -17,6 +17,7 @@ export interface OrderFormData {
     phone: string;
     description?: string;
     isInAddis: boolean;
+    coupon_code?: string;
 }
 
 /**
@@ -85,6 +86,7 @@ export async function placeOrder(formData: OrderFormData): Promise<void> {
         total_prices,
         order_status: "pending",
         orderplace: formData.isInAddis, // true if in Addis, false otherwise
+        coupon_code: formData.coupon_code?.trim() || null,
     });
 
     if (error) {

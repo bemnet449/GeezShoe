@@ -16,7 +16,6 @@ interface Product {
     discount_price: number | null;
     image_urls: string[];
     is_active: boolean;
-    item_number: number;
 }
 
 export default function ShopPage() {
@@ -31,8 +30,7 @@ export default function ShopPage() {
             try {
                 const { data, error } = await supabase
                     .from("Products")
-                    .select("*")
-                    .eq("is_active", true)
+                    .select("id, Name, description, real_price, fake_price, discount, discount_price, image_urls, is_active")
                     .order("created_at", { ascending: false });
 
                 if (error) {
@@ -144,6 +142,7 @@ export default function ShopPage() {
                                             src={product.image_urls[0]}
                                             alt={product.Name}
                                             fill
+                                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                                             className="object-cover group-hover:scale-110 transition-transform duration-700"
                                         />
                                     ) : (
@@ -156,7 +155,7 @@ export default function ShopPage() {
                                             Offer
                                         </div>
                                     )}
-                                    {product.item_number <= 0 && (
+                                    {!product.is_active && (
                                         <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-[2px] z-10 flex items-center justify-center">
                                             <span className="bg-white/10 text-white border border-white/20 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] leading-none">
                                                 Sold Out
@@ -188,8 +187,8 @@ export default function ShopPage() {
                                     </div>
 
                                     <div className="mt-auto pt-4 border-t border-stone-100 flex flex-col items-center gap-3">
-                                        <div className="w-[80%] bg-stone-900 text-white text-[10px] font-black uppercase tracking-[0.2em] py-3.5 rounded-xl group-hover:bg-amber-600 transition-all duration-300 shadow-lg shadow-stone-200 text-center">
-                                            Buy Now
+                                        <div className={`w-[80%] text-white text-[10px] font-black uppercase tracking-[0.2em] py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-stone-200 text-center ${product.is_active ? 'bg-stone-900 group-hover:bg-amber-600' : 'bg-stone-400'}`}>
+                                            {product.is_active ? 'Buy Now' : 'Out of Stock'}
                                         </div>
                                         <span className="text-[9px] uppercase font-black text-stone-400 tracking-[0.3em] opacity-50 group-hover:opacity-100 group-hover:text-amber-600 transition-all">
                                             View Details

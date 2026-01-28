@@ -20,6 +20,7 @@ interface Order {
     total_prices: number[];
     order_status: string;
     orderplace: boolean;
+    coupon_code: string | null;
 }
 
 export default function OrderDetailsPage() {
@@ -76,7 +77,10 @@ export default function OrderDetailsPage() {
                 const newStock = Math.max(0, productData.item_number - (quantity || 1));
                 const { error: stockError } = await supabase
                     .from("Products")
-                    .update({ item_number: newStock })
+                    .update({
+                        item_number: newStock,
+                        is_active: newStock > 0
+                    })
                     .eq("id", productId);
 
                 if (stockError) {
@@ -218,6 +222,12 @@ export default function OrderDetailsPage() {
                                 <p className="text-[10px] uppercase font-black tracking-widest text-stone-400 mb-1">Location</p>
                                 <p className="font-bold text-stone-900">
                                     {order.orderplace ? "📍 Addis Ababa" : "✈️ Outside Addis Ababa"}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] uppercase font-black tracking-widest text-stone-400 mb-1">Coupon Code</p>
+                                <p className={`font-black tracking-widest ${order.coupon_code ? "text-amber-600" : "text-stone-300"}`}>
+                                    {order.coupon_code || "NONE"}
                                 </p>
                             </div>
                         </div>

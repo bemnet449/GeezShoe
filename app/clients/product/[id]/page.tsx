@@ -19,7 +19,6 @@ interface Product {
     image_urls: string[];
     sizes_available: number[];
     is_active: boolean;
-    item_number: number;
 }
 
 export default function ProductDetailPage() {
@@ -38,7 +37,7 @@ export default function ProductDetailPage() {
             setLoading(true);
             const { data, error } = await supabase
                 .from("Products")
-                .select("*")
+                .select("id, Name, description, real_price, fake_price, discount, discount_price, image_urls, sizes_available, is_active")
                 .eq("id", id)
                 .single();
 
@@ -87,6 +86,7 @@ export default function ProductDetailPage() {
                             src={product.image_urls[activeImage]}
                             alt={product.Name}
                             fill
+                            sizes="(max-width: 1280px) 100vw, 1280px"
                             className="object-contain"
                             priority
                         />
@@ -107,6 +107,7 @@ export default function ProductDetailPage() {
                                     src={product.image_urls[activeImage]}
                                     alt={product.Name}
                                     fill
+                                    sizes="(max-width: 1024px) 100vw, 50vw"
                                     className="object-cover animate-in fade-in zoom-in-95 duration-500 group-hover:scale-105 transition-transform duration-700"
                                 />
                             ) : (
@@ -139,7 +140,7 @@ export default function ProductDetailPage() {
                                     className={`relative aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-300 ${activeImage === index ? "border-amber-600 scale-95 shadow-lg" : "border-transparent opacity-60 hover:opacity-100 hover:border-amber-200"
                                         }`}
                                 >
-                                    <Image src={url} alt={`${product.Name} ${index}`} fill className="object-cover" />
+                                    <Image src={url} alt={`${product.Name} ${index}`} fill sizes="(max-width: 768px) 25vw, 10vw" className="object-cover" />
                                 </button>
                             ))}
                         </div>
@@ -153,6 +154,11 @@ export default function ProductDetailPage() {
                                 {product.discount && (
                                     <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
                                         On Sale
+                                    </span>
+                                )}
+                                {!product.is_active && (
+                                    <span className="bg-red-100 text-red-900 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                                        Out of Stock
                                     </span>
                                 )}
                             </div>
@@ -208,7 +214,7 @@ export default function ProductDetailPage() {
                                     </span>
                                 )}
                             </div>
-                            <div className={`inline-flex items-center gap-4 bg-white border-2 rounded-2xl p-2 transition-all duration-300 ${!selectedSize
+                            <div className={`inline-flex items-center gap-4 bg-white border-2 rounded-2xl p-2 transition-all duration-300 ${!selectedSize || !product.is_active
                                 ? 'border-stone-200 opacity-50'
                                 : 'border-amber-600 shadow-lg shadow-amber-600/10'
                                 }`}>
@@ -235,12 +241,12 @@ export default function ProductDetailPage() {
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        if (selectedSize && quantity < product.item_number) {
+                                        if (selectedSize && quantity < 15) {
                                             setQuantity(quantity + 1);
                                         }
                                     }}
-                                    disabled={!selectedSize || quantity >= product.item_number}
-                                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl transition-all duration-200 ${!selectedSize || quantity >= product.item_number
+                                    disabled={!selectedSize || quantity >= 15 || !product.is_active}
+                                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl transition-all duration-200 ${!selectedSize || quantity >= 15 || !product.is_active
                                         ? 'bg-stone-100 text-stone-300 cursor-not-allowed'
                                         : 'bg-amber-600 text-white hover:bg-amber-700 hover:scale-110 active:scale-95 cursor-pointer'
                                         }`}
@@ -253,7 +259,7 @@ export default function ProductDetailPage() {
                         {/* Actions */}
                         <div className="flex flex-col sm:flex-row gap-4 mb-12">
                             <button
-                                disabled={product.item_number <= 0 || !selectedSize}
+                                disabled={!selectedSize || !product.is_active}
                                 onClick={() => {
                                     if (!selectedSize) return;
 
@@ -275,7 +281,7 @@ export default function ProductDetailPage() {
                                     setQuantity(1);
                                     setSelectedSize(null);
                                 }}
-                                className={`flex-[1.5] flex items-center justify-center space-x-3 py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${product.item_number > 0 && selectedSize
+                                className={`flex-[1.5] flex items-center justify-center space-x-3 py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${selectedSize && product.is_active
                                     ? "bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20"
                                     : "bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200 shadow-none"
                                     }`}
@@ -285,7 +291,7 @@ export default function ProductDetailPage() {
                             </button>
 
                             <button
-                                disabled={product.item_number <= 0 || !selectedSize}
+                                disabled={!selectedSize || !product.is_active}
                                 onClick={() => {
                                     if (!selectedSize) return;
 
@@ -304,7 +310,7 @@ export default function ProductDetailPage() {
                                     // Redirect to checkout
                                     router.push("/clients/checkout");
                                 }}
-                                className={`flex-1 flex items-center justify-center py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${product.item_number > 0 && selectedSize
+                                className={`flex-1 flex items-center justify-center py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${selectedSize && product.is_active
                                     ? "bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20"
                                     : "bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200 shadow-none"
                                     }`}

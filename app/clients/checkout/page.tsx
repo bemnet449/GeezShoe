@@ -17,12 +17,14 @@ export default function CheckoutPage() {
     const router = useRouter();
     const [cart, setCart] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState(false);
+    const [showCouponInput, setShowCouponInput] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
         email: "",
         phone: "",
         description: "",
         isInAddis: true,
+        coupon_code: "",
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [orderSuccess, setOrderSuccess] = useState(false);
@@ -38,7 +40,8 @@ export default function CheckoutPage() {
     };
 
     const handleUpdateQuantity = (id: string, qty: number, size?: number) => {
-        updateCartItemQuantity(id, qty, size);
+        const limitedQty = Math.min(Math.max(1, qty), 15);
+        updateCartItemQuantity(id, limitedQty, size);
         setCart(getCart());
     };
 
@@ -153,7 +156,7 @@ export default function CheckoutPage() {
                                     >
                                         {item.image && (
                                             <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0">
-                                                <Image src={item.image} alt={item.name} fill className="object-cover" />
+                                                <Image src={item.image} alt={item.name} fill sizes="96px" className="object-cover" />
                                             </div>
                                         )}
                                         <div className="flex-1">
@@ -186,7 +189,8 @@ export default function CheckoutPage() {
                                                 </span>
                                                 <button
                                                     onClick={() => handleUpdateQuantity(item.id, item.qty + 1, item.size)}
-                                                    className="w-8 h-8 flex items-center justify-center hover:bg-stone-50 transition-colors"
+                                                    disabled={item.qty >= 15}
+                                                    className={`w-8 h-8 flex items-center justify-center transition-colors ${item.qty >= 15 ? "text-stone-300 cursor-not-allowed" : "hover:bg-stone-50"}`}
                                                 >
                                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -228,11 +232,11 @@ export default function CheckoutPage() {
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${errors.name ? "border-red-300 bg-red-50" : "border-stone-200 bg-white"
-                                            } focus:border-amber-600 focus:outline-none font-medium`}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${errors.name ? "border-red-300 bg-red-50 focus:ring-red-500/10" : "border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10"
+                                            } focus:outline-none font-bold text-stone-900 group shadow-sm hover:border-stone-300`}
                                         placeholder="John Doe"
                                     />
-                                    {errors.name && <p className="text-red-600 text-xs font-bold mt-1">{errors.name}</p>}
+                                    {errors.name && <p className="text-red-600 text-[10px] font-bold mt-1 uppercase tracking-tight">{errors.name}</p>}
                                 </div>
 
                                 <div>
@@ -243,11 +247,11 @@ export default function CheckoutPage() {
                                         type="email"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${errors.email ? "border-red-300 bg-red-50" : "border-stone-200 bg-white"
-                                            } focus:border-amber-600 focus:outline-none font-medium`}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${errors.email ? "border-red-300 bg-red-50 focus:ring-red-500/10" : "border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10"
+                                            } focus:outline-none font-bold text-stone-900 group shadow-sm hover:border-stone-300`}
                                         placeholder="john@example.com"
                                     />
-                                    {errors.email && <p className="text-red-600 text-xs font-bold mt-1">{errors.email}</p>}
+                                    {errors.email && <p className="text-red-600 text-[10px] font-bold mt-1 uppercase tracking-tight">{errors.email}</p>}
                                 </div>
 
                                 <div>
@@ -258,11 +262,11 @@ export default function CheckoutPage() {
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className={`w-full px-4 py-3 rounded-xl border-2 transition-colors ${errors.phone ? "border-red-300 bg-red-50" : "border-stone-200 bg-white"
-                                            } focus:border-amber-600 focus:outline-none font-medium`}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${errors.phone ? "border-red-300 bg-red-50 focus:ring-red-500/10" : "border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10"
+                                            } focus:outline-none font-bold text-stone-900 group shadow-sm hover:border-stone-300`}
                                         placeholder="+251 912 345 678"
                                     />
-                                    {errors.phone && <p className="text-red-600 text-xs font-bold mt-1">{errors.phone}</p>}
+                                    {errors.phone && <p className="text-red-600 text-[10px] font-bold mt-1 uppercase tracking-tight">{errors.phone}</p>}
                                 </div>
 
                                 <div>
@@ -272,10 +276,58 @@ export default function CheckoutPage() {
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl border-2 border-stone-200 bg-white focus:border-amber-600 focus:outline-none font-medium resize-none"
-                                        rows={4}
+                                        className="w-full px-4 py-3 rounded-xl border-2 border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10 focus:outline-none font-bold text-stone-900 shadow-sm hover:border-stone-300 resize-none transition-all"
+                                        rows={3}
                                         placeholder="Any special requests or delivery instructions..."
                                     />
+                                </div>
+
+                                {/* Coupon Code Section */}
+                                <div className="bg-stone-50 border-2 border-stone-200 rounded-2xl p-6 transition-all duration-300">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className="relative flex items-center justify-center mt-0.5">
+                                            <input
+                                                type="checkbox"
+                                                checked={showCouponInput}
+                                                onChange={(e) => {
+                                                    setShowCouponInput(e.target.checked);
+                                                    if (!e.target.checked) {
+                                                        setFormData(prev => ({ ...prev, coupon_code: "" }));
+                                                    }
+                                                }}
+                                                className="w-5 h-5 rounded border-2 border-stone-300 text-amber-600 focus:ring-2 focus:ring-amber-600 focus:ring-offset-0 cursor-pointer accent-amber-600 transition-all"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <span className="text-sm font-bold text-stone-900 group-hover:text-amber-600 transition-colors uppercase tracking-tight">
+                                                I have a coupon code
+                                            </span>
+                                        </div>
+                                    </label>
+
+                                    {showCouponInput && (
+                                        <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
+                                            <div className="relative">
+                                                <input
+                                                    type="text"
+                                                    value={formData.coupon_code}
+                                                    onChange={(e) => setFormData({ ...formData, coupon_code: e.target.value.toUpperCase() })}
+                                                    className="w-full px-4 py-3 rounded-xl border-2 border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10 focus:outline-none font-bold text-stone-900 shadow-sm hover:border-stone-300 text-sm transition-all"
+                                                    placeholder="ENTER CODE (E.G. WELCOME10)"
+                                                />
+                                                <div className="absolute inset-y-0 right-4 flex items-center">
+                                                    <svg className="w-5 h-5 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            {formData.coupon_code && (
+                                                <p className="text-[10px] text-amber-600 font-bold mt-2 flex items-center gap-1 uppercase tracking-tight italic">
+                                                    Coupon code will be validated upon order processing
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Delivery Location */}
