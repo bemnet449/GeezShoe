@@ -64,23 +64,23 @@ export default function ShopPage() {
 
             <div className="pt-32 pb-24 container mx-auto px-6">
                 {/* Header & Search */}
-                <div className="mb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                <div className="mb-10 md:mb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-8">
                     <div className="max-w-xl">
-                        <h1 className="text-5xl font-black text-stone-900 mb-4 tracking-tight">THE COLLECTION</h1>
-                        <p className="text-stone-500">
+                        <h1 className="text-4xl md:text-5xl font-black text-stone-900 mb-3 md:mb-4 tracking-tight">THE COLLECTION</h1>
+                        <p className="text-sm md:text-base text-stone-500">
                             Discover our full range of handcrafted leather footwear. Each pair is built to last and designed to impress.
                         </p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                         <button
                             onClick={() => setShowOnlyDiscounts(!showOnlyDiscounts)}
-                            className={`whitespace-nowrap px-6 py-4 rounded-2xl font-bold text-sm transition-all flex items-center gap-2 shadow-sm ${showOnlyDiscounts
+                            className={`whitespace-nowrap w-full sm:w-auto px-6 py-4 rounded-2xl font-bold text-xs md:text-sm transition-all flex items-center justify-center gap-2 shadow-sm ${showOnlyDiscounts
                                 ? "bg-amber-600 text-white shadow-amber-200"
                                 : "bg-white text-stone-600 border border-stone-200 hover:border-amber-600 hover:text-amber-600"
                                 }`}
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                             </svg>
                             {showOnlyDiscounts ? "Showing Offers" : "Show Offers"}
@@ -88,7 +88,7 @@ export default function ShopPage() {
 
                         <div className="relative w-full sm:w-80">
                             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                <svg className="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 md:w-5 md:h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </div>
@@ -97,7 +97,7 @@ export default function ShopPage() {
                                 placeholder="Search products..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-white border border-stone-200 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-sm text-stone-900"
+                                className="w-full bg-white border border-stone-200 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-sm text-sm text-stone-900"
                             />
                         </div>
                     </div>
@@ -105,10 +105,10 @@ export default function ShopPage() {
 
                 {/* Product Grid */}
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
                         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                             <div key={i} className="animate-pulse">
-                                <div className="aspect-[3/4] bg-stone-200 rounded-3xl mb-4"></div>
+                                <div className="aspect-[3/4] bg-stone-200 rounded-2xl md:rounded-3xl mb-4"></div>
                                 <div className="h-4 bg-stone-200 rounded w-2/3 mb-2"></div>
                                 <div className="h-4 bg-stone-200 rounded w-1/3"></div>
                             </div>
@@ -129,7 +129,7 @@ export default function ShopPage() {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-12">
                         {filteredProducts.map((product) => (
                             <Link
                                 key={product.id}
@@ -164,33 +164,33 @@ export default function ShopPage() {
                                     )}
                                 </div>
 
-                                <div className="p-5 flex flex-col flex-1">
-                                    <div className="flex justify-between items-start mb-4 gap-4">
-                                        <h3 className="text-xl font-black text-stone-900 group-hover:text-amber-600 transition-colors line-clamp-1 uppercase tracking-tight leading-tight">
+                                <div className="p-3 md:p-5 flex flex-col flex-1">
+                                    <div className="flex flex-col md:flex-row justify-between items-start mb-3 md:mb-4 gap-1 md:gap-4">
+                                        <h3 className="text-sm md:text-xl font-black text-stone-900 group-hover:text-amber-600 transition-colors line-clamp-1 uppercase tracking-tight leading-tight">
                                             {product.Name}
                                         </h3>
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-lg font-black text-stone-900 leading-none">
+                                        <div className="flex flex-row md:flex-col items-center md:items-end gap-2 md:gap-0">
+                                            <span className="text-sm md:text-lg font-black text-stone-900 leading-none">
                                                 ${product.discount && product.discount_price ? product.discount_price : product.real_price}
                                             </span>
                                             {/* Crossed-out price logic */}
                                             {product.discount ? (
-                                                <span className="text-xs text-stone-400 line-through font-bold mt-1">
+                                                <span className="text-[10px] md:text-xs text-stone-400 line-through font-bold">
                                                     ${product.real_price}
                                                 </span>
                                             ) : product.fake_price && Number(product.fake_price) > Number(product.real_price) ? (
-                                                <span className="text-xs text-stone-400 line-through font-bold mt-1">
+                                                <span className="text-[10px] md:text-xs text-stone-400 line-through font-bold">
                                                     ${product.fake_price}
                                                 </span>
                                             ) : null}
                                         </div>
                                     </div>
 
-                                    <div className="mt-auto pt-4 border-t border-stone-100 flex flex-col items-center gap-3">
-                                        <div className={`w-[80%] text-white text-[10px] font-black uppercase tracking-[0.2em] py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-stone-200 text-center ${product.is_active ? 'bg-stone-900 group-hover:bg-amber-600' : 'bg-stone-400'}`}>
+                                    <div className="mt-auto pt-3 md:pt-4 border-t border-stone-100 flex flex-col items-center gap-2 md:gap-3">
+                                        <div className={`w-full text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] py-2.5 md:py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-stone-200 text-center ${product.is_active ? 'bg-stone-900 group-hover:bg-amber-600' : 'bg-stone-400'}`}>
                                             {product.is_active ? 'Buy Now' : 'Out of Stock'}
                                         </div>
-                                        <span className="text-[9px] uppercase font-black text-stone-400 tracking-[0.3em] opacity-50 group-hover:opacity-100 group-hover:text-amber-600 transition-all">
+                                        <span className="text-[8px] md:text-[9px] uppercase font-black text-stone-400 tracking-[0.2em] md:tracking-[0.3em] opacity-50 group-hover:opacity-100 group-hover:text-amber-600 transition-all">
                                             View Details
                                         </span>
                                     </div>

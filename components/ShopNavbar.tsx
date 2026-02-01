@@ -1,70 +1,77 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { getCartItemCount } from "@/utils/placeOrder";
 
 export default function ShopNavbar() {
     const [scrolled, setScrolled] = useState(false);
     const [cartCount, setCartCount] = useState(0);
+    const pathname = usePathname();
     const router = useRouter();
+
+    // Use a more robust check for client pages
+    const isClientPage = pathname ? pathname.toLowerCase().includes("/clients") : false;
 
     useEffect(() => {
         const handleScroll = () => {
-            setScrolled(window.scrollY > 20);
+            setScrolled(window.scrollY > 10); // More sensitive for mobile
         };
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
     useEffect(() => {
-        // Update cart count on mount and when localStorage changes
         const updateCartCount = () => {
-            setCartCount(getCartItemCount());
+            const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
+            const total = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0);
+            setCartCount(total);
         };
 
         updateCartCount();
-
-        // Listen for storage events (when cart is updated in other tabs)
+        window.addEventListener("cartUpdated", updateCartCount);
         window.addEventListener("storage", updateCartCount);
 
-        // Custom event for same-tab updates
-        const handleCartUpdate = () => updateCartCount();
-        window.addEventListener("cartUpdated", handleCartUpdate);
-
-        // Poll for updates (fallback for same-tab changes)
-        const interval = setInterval(updateCartCount, 1000);
-
         return () => {
+            window.removeEventListener("cartUpdated", updateCartCount);
             window.removeEventListener("storage", updateCartCount);
-            window.removeEventListener("cartUpdated", handleCartUpdate);
-            clearInterval(interval);
         };
     }, []);
 
+    // Force solid background on client-side shop/product pages to prevent overlapping text issues
+    const shouldShowSolidBg = scrolled || isClientPage;
+
     return (
         <nav
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-6 py-4 ${scrolled ? "bg-white/80 backdrop-blur-md shadow-sm border-b border-stone-100" : "bg-transparent"
-                }`}
+            className={`fixed top-0 left-0 right-0 z-[9999] transition-all duration-300 py-2 md:py-4 ${shouldShowSolidBg ? "bg-white shadow-md border-b border-stone-100" : "bg-transparent text-white"}
+                `}
         >
-            <div className="container mx-auto flex items-center justify-between">
-                <Link href="/" className="group flex items-center space-x-2">
-                    <span className="text-2xl font-black tracking-tighter text-stone-900 group-hover:text-amber-600 transition-colors">
-                        Geez<span className="text-amber-600 group-hover:text-stone-900 transition-colors">Shoe</span>
-                    </span>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-2 sm:gap-4">
+                <Link href="/" className="group flex items-center shrink-0">
+                    <div className="relative w-20 h-7 sm:w-28 sm:h-8 md:w-36 md:h-10">
+                        <Image
+                            src="/LogoBrown.PNG"
+                            alt="Geez Shoe"
+                            fill
+                            sizes="(max-width: 640px) 80px, (max-width: 768px) 120px, 150px"
+                            className="object-contain"
+                            priority
+                        />
+                    </div>
                 </Link>
 
-                <div className="flex items-center space-x-6">
-                    <Link href="/clients/shop" className="text-sm font-bold uppercase tracking-widest text-stone-600 hover:text-amber-600 transition-colors">
+                <div className="flex items-center space-x-2 sm:space-x-6 shrink-0">
+                    <Link href="/clients/shop" className={`text-[11px] sm:text-sm font-black uppercase tracking-widest transition-colors whitespace-nowrap ${shouldShowSolidBg ? "text-stone-600 hover:text-amber-600" : "text-white hover:text-amber-200"}`}>
                         Shop
                     </Link>
                     <button
                         onClick={() => router.push("/clients/checkout")}
-                        className="relative group p-2"
+                        className={`relative group p-1.5 sm:p-2 transition-colors ${shouldShowSolidBg ? "text-stone-800" : "text-white"}`}
                     >
                         <svg
-                            className="w-6 h-6 text-stone-900 group-hover:text-amber-600 transition-colors"
+                            className="w-6 h-6 group-hover:text-amber-600 transition-colors"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"

@@ -1,9 +1,12 @@
+import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import Link from "next/link";
+
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
+      <Navbar />
       {/* Hero Section - Full Page Background */}
       <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
         {/* Background Image Container */}
@@ -13,35 +16,51 @@ export default function Home() {
             alt="Premium Geez Shoes"
             fill
             sizes="100vw"
-            className="object-cover brightness-50 animate-ken-burns"
+            className="object-cover brightness-50 animate-ken-burns blur-[5px]"
             priority
           />
         </div>
 
         {/* Big Background Company Name - Watermark style */}
-        <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-full text-center z-5 opacity-0 animate-dramatic-reveal pointer-events-none">
-          <h2 className="text-[12vw] font-black tracking-[-0.05em] leading-none text-white/5 uppercase select-none">
-            GEEZ SHOE
-          </h2>
+        <div className="absolute top-[2%] left-1/2 -translate-x-1/2 w-full flex justify-center z-5 opacity-0 animate-dramatic-reveal pointer-events-none">
+          <div className="relative w-[98vw] h-[30vw] opacity-[0] grayscale invert">
+            <Image
+              src="/LogoBrown.PNG"
+              alt="Geez Shoe Watermark"
+              fill
+              sizes="95vw"
+              className="object-contain"
+            />
+          </div>
         </div>
 
         {/* Main Brand Content - Centered */}
         <div className="container mx-auto px-6 relative z-10 flex flex-col items-center justify-center text-center">
           {/* Phase 1: Logo Reveal (Starts 0s, ends 2.5s) */}
-          <div className="opacity-0 animate-dramatic-reveal mb-12">
-            <h1 className="text-8xl md:text-[12rem] font-black tracking-tighter text-white leading-none drop-shadow-2xl">
-              GEEZ<span className="text-amber-600">SHOE</span>
-            </h1>
-            <p className="text-sm font-bold tracking-[1em] text-white/40 uppercase mt-6 ml-2">
-              Ethiopian Artisanal Excellence
-            </p>
+          <div className="opacity-0 animate-dramatic-reveal mb-4 md:mb-2 flex flex-col items-center w-full px-1 md:px-4">
+            <div className="relative w-full max-w-[500px] h-[160px] sm:max-w-[800px] sm:h-[250px] md:max-w-[1100px] md:h-[350px] lg:w-[1400px] lg:h-[450px] mb-0 transition-all duration-500">
+              <Image
+                src="/LogoBrown.PNG"
+                alt="Geez Shoe Logo"
+                fill
+                sizes="(max-width: 640px) 500px, (max-width: 768px) 800px, 1400px"
+                className="object-contain"
+                priority
+              />
+            </div>
+            <div className="relative -mt-4 md:-mt-8 z-10">
+              <div className="absolute inset-0 bg-black/5 blur-xl rounded-full"></div>
+              <p className="relative text-[10px] sm:text-xs md:text-sm font-black tracking-[0.3em] md:tracking-[0.8em] text-stone-200/90 uppercase text-center drop-shadow-md">
+                Ethiopian Artisanal Excellence
+              </p>
+            </div>
           </div>
 
           {/* Phase 2: Button Reveal (Starts strictly after Logo animation finishes) */}
-          <div className="opacity-0 animate-dramatic-reveal [animation-delay:2500ms]">
+          <div className="opacity-0 animate-dramatic-reveal [animation-delay:2500ms] mb-8 md:mb-0 mt-4 md:mt-6 scale-90 md:scale-100 origin-top">
             <Link
               href="/clients/shop"
-              className="group relative inline-flex items-center justify-center px-12 py-5 overflow-hidden font-bold text-white transition-all duration-300 bg-amber-600 rounded-full hover:bg-amber-500 shadow-2xl shadow-amber-900/40"
+              className="group relative inline-flex items-center justify-center px-10 py-4 md:px-12 md:py-5 overflow-hidden font-bold text-white transition-all duration-300 bg-[#A8513B] backdrop-blur-sm rounded-full hover:bg-[#EF6C00] shadow-2xl shadow-orange-900/40 border border-white/10"
             >
               <span className="relative flex items-center space-x-3 uppercase tracking-[0.2em] text-sm">
                 <span>Enter Collection</span>
@@ -60,7 +79,7 @@ export default function Home() {
         </div>
 
         {/* Highly Visible Scroll Indicator */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
+        <div className="absolute bottom-8 lg:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
           <div className="flex flex-col items-center animate-bounce space-y-3">
             <span className="text-[10px] text-white font-black uppercase tracking-[0.5em] drop-shadow-md">Scroll</span>
             <div className="w-[3px] h-14 bg-gradient-to-b from-amber-600 via-white to-transparent rounded-full border border-white/10 shadow-lg shadow-black/80"></div>
@@ -84,39 +103,56 @@ export default function Home() {
               </div>
               <div className="absolute -top-10 -right-10 w-64 h-64 bg-amber-50 rounded-full -z-0"></div>
               <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-stone-100 rounded-full -z-0"></div>
-              <div className="absolute bottom-12 -right-8 z-20 bg-amber-600 text-white px-8 py-4 rounded-2xl shadow-xl transform rotate-3 hidden md:block">
-                <span className="text-2xl font-black italic tracking-tighter">GEEZ<span className="text-stone-900">SHOE</span></span>
+              <div className="absolute bottom-6 md:bottom-12 -right-4 md:-right-8 z-20 bg-white px-6 md:px-10 py-3 md:py-6 rounded-2xl shadow-xl transform rotate-3 block md:block">
+                <div className="relative w-24 h-8 md:w-44 md:h-16">
+                  <Image
+                    src="/LogoBrown.PNG"
+                    alt="Geez Shoe Logo"
+                    fill
+                    sizes="(max-width: 768px) 100px, 176px"
+                    className="object-contain"
+                  />
+                </div>
               </div>
             </div>
 
             <div className="flex flex-col">
-              <h2 className="text-sm uppercase font-bold tracking-[0.4em] text-amber-600 mb-6 font-geist-sans">Our Story</h2>
-              <h3 className="text-5xl md:text-6xl font-black text-stone-900 mb-10 tracking-tight leading-tight">
-                CRAFTED WITH <br /> PASSION
+              <h2 className="text-[10px] md:text-sm uppercase font-bold tracking-[0.4em] text-amber-600 mb-4 md:mb-6 font-geist-sans">Our Story</h2>
+              <h3 className="text-4xl md:text-6xl font-black text-stone-900 mb-6 md:mb-10 tracking-tight leading-tight">
+                CRAFTED WITH <br className="hidden md:block" /> PASSION
               </h3>
-              <p className="text-xl text-stone-600 leading-relaxed mb-12">
+              <p className="text-base md:text-xl text-stone-600 leading-relaxed mb-8 md:mb-12">
                 At Geez Shoe, we believe that footwear is an expression of heritage and quality. Every pair of our shoes is handcrafted by master artisans in the heart of Addis Ababa, using only the finest Ethiopian leather that has been prized globally for centuries.
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left mb-12">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 text-left mb-8 md:mb-12">
                 <div>
-                  <h4 className="text-3xl font-black text-stone-900 mb-2">Heritage</h4>
-                  <p className="text-xs text-stone-500 uppercase font-bold tracking-widest">Timeless Design</p>
+                  <h4 className="text-2xl md:text-3xl font-black text-stone-900 mb-2">Heritage</h4>
+                  <p className="text-[10px] text-stone-500 uppercase font-bold tracking-widest">Timeless Design</p>
                 </div>
                 <div>
-                  <h4 className="text-3xl font-black text-stone-900 mb-2">Quality</h4>
-                  <p className="text-xs text-stone-500 uppercase font-bold tracking-widest">Premium Leather</p>
+                  <h4 className="text-2xl md:text-3xl font-black text-stone-900 mb-2">Quality</h4>
+                  <p className="text-[10px] text-stone-500 uppercase font-bold tracking-widest">Premium Leather</p>
                 </div>
-                <div>
-                  <h4 className="text-3xl font-black text-stone-900 mb-2">Impact</h4>
-                  <p className="text-xs text-stone-500 uppercase font-bold tracking-widest">Artisan Made</p>
+                <div className="col-span-2 md:col-span-1">
+                  <h4 className="text-2xl md:text-3xl font-black text-stone-900 mb-2">Impact</h4>
+                  <p className="text-[10px] text-stone-500 uppercase font-bold tracking-widest">Artisan Made</p>
                 </div>
               </div>
 
-              <div className="pt-8 border-t border-stone-100">
-                <p className="text-stone-400 font-black italic text-xl tracking-tighter">
-                  GEEZ<span className="text-amber-600">SHOE</span> — Signature Collection
-                </p>
+              <div className="pt-6 md:pt-8 border-t border-stone-100">
+                <div className="flex items-center space-x-2">
+                  <div className="relative w-20 h-6 md:w-24 md:h-8 opacity-50">
+                    <Image
+                      src="/LogoBrown.PNG"
+                      alt="Geez Shoe"
+                      fill
+                      sizes="(max-width: 768px) 80px, 96px"
+                      className="object-contain"
+                    />
+                  </div>
+                  <span className="text-[10px] md:text-base text-stone-400 font-bold ml-2">— Signature Collection</span>
+                </div>
               </div>
             </div>
           </div>

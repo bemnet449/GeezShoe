@@ -133,6 +133,8 @@ export function addToCart(item: CartItem): void {
     }
 
     localStorage.setItem("cart", JSON.stringify(cart));
+    // Dispatch custom event for same-tab updates
+    window.dispatchEvent(new Event("cartUpdated"));
 }
 
 /**
@@ -144,6 +146,8 @@ export function removeFromCart(id: string, size?: number): void {
         (item) => !(item.id === id && item.size === size)
     );
     localStorage.setItem("cart", JSON.stringify(filtered));
+    // Dispatch custom event for same-tab updates
+    window.dispatchEvent(new Event("cartUpdated"));
 }
 
 /**
@@ -156,6 +160,8 @@ export function updateCartItemQuantity(id: string, qty: number, size?: number): 
     if (item) {
         item.qty = Math.max(1, qty);
         localStorage.setItem("cart", JSON.stringify(cart));
+        // Dispatch custom event for same-tab updates
+        window.dispatchEvent(new Event("cartUpdated"));
     }
 }
 
@@ -164,6 +170,8 @@ export function updateCartItemQuantity(id: string, qty: number, size?: number): 
  */
 export function clearCart(): void {
     localStorage.removeItem("cart");
+    // Dispatch custom event for same-tab updates
+    window.dispatchEvent(new Event("cartUpdated"));
 }
 
 /**

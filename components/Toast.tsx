@@ -51,11 +51,11 @@ export default function Toast({ message, type = "success", duration = 3000, onCl
 
     return (
         <div
-            className={`fixed top-24 right-6 z-[100] transition-all duration-300 ease-out ${isVisible ? "translate-x-0 opacity-100" : "translate-x-[120%] opacity-0"
-                }`}
+            className={`transition-all duration-500 ease-out transform ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-12 opacity-0"
+                } w-full md:w-auto`}
         >
             <div
-                className={`${bgColor} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px] max-w-md`}
+                className={`${bgColor} text-white px-5 md:px-6 py-3.5 md:py-4 rounded-xl md:rounded-2xl shadow-2xl flex items-center gap-3 md:gap-4 min-w-0 md:min-w-[300px] max-w-md mx-auto`}
             >
                 <div className="flex-shrink-0">{icon}</div>
                 <p className="font-bold text-sm flex-1">{message}</p>
@@ -97,12 +97,11 @@ export function ToastContainer() {
     }, []);
 
     return (
-        <>
-            {toasts.map((toast, index) => (
+        <div className="fixed top-20 md:top-24 left-0 right-0 md:left-auto md:right-0 z-[150] pointer-events-none p-4 md:px-8 flex flex-col items-center md:items-end gap-3">
+            {toasts.map((toast) => (
                 <div
                     key={toast.id}
-                    style={{ top: `${6 + index * 5.5}rem` }}
-                    className="fixed right-6 z-[100]"
+                    className="pointer-events-auto w-full md:w-auto"
                 >
                     <Toast
                         message={toast.message}
@@ -111,7 +110,7 @@ export function ToastContainer() {
                     />
                 </div>
             ))}
-        </>
+        </div>
     );
 }
 
