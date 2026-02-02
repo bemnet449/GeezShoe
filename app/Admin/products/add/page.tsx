@@ -14,7 +14,7 @@ export default function AddProductPage() {
 
     return (
         <div className="w-full">
-            <main className="p-8">
+            <main className="p-4 md:p-8">
                 <header className="mb-8 flex items-center space-x-4">
                     <Link href="/Admin/products" className="p-2 bg-white rounded-lg shadow-sm border border-stone-200 text-stone-600 hover:text-amber-700 transition-all">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,8 +22,8 @@ export default function AddProductPage() {
                         </svg>
                     </Link>
                     <div>
-                        <h1 className="text-3xl font-bold text-stone-900">Add New Product</h1>
-                        <p className="text-stone-500">Create a new entry in your footwear catalog</p>
+                        <h1 className="text-2xl md:text-3xl font-bold text-stone-900">Add New Product</h1>
+                        <p className="text-sm text-stone-500">Create a new entry in your footwear catalog</p>
                     </div>
                 </header>
 

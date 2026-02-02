@@ -4,7 +4,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-const Sidebar = () => {
+interface SidebarProps {
+    isOpen?: boolean;
+    onClose?: () => void;
+}
+
+const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     const pathname = usePathname();
     const router = useRouter();
 
@@ -62,56 +67,78 @@ const Sidebar = () => {
     ];
 
     return (
-        <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-stone-200 shadow-sm z-50 flex flex-col">
-            {/* Sidebar Header */}
-            <div className="p-6 border-b border-stone-100">
-                <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-amber-100 rounded-lg">
-                        <svg className="w-6 h-6 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 className="text-xl font-bold text-stone-800 leading-tight">GeezShoe</h2>
-                        <p className="text-xs text-stone-500 font-medium">Admin Portal</p>
-                    </div>
-                </div>
-            </div>
+        <>
+            {/* Backdrop for mobile */}
+            <div
+                className={`fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+                    }`}
+                onClick={onClose}
+            ></div>
 
-            {/* Navigation Items */}
-            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                {navItems.map((item) => (
-                    <Link
-                        key={item.path}
-                        href={item.path}
-                        className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${pathname === item.path
+            <aside
+                className={`fixed left-0 top-0 h-full w-64 bg-white border-r border-stone-200 shadow-xl lg:shadow-sm z-50 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
+                    }`}
+            >
+                {/* Sidebar Header */}
+                <div className="p-6 border-b border-stone-100 flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-amber-100 rounded-lg">
+                            <svg className="w-6 h-6 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-stone-800 leading-tight">GeezShoe</h2>
+                            <p className="text-xs text-stone-500 font-medium">Admin Portal</p>
+                        </div>
+                    </div>
+                    {/* Close button for mobile */}
+                    <button
+                        onClick={onClose}
+                        className="lg:hidden p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-50 rounded-lg transition-colors"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Navigation Items */}
+                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+                    {navItems.map((item) => (
+                        <Link
+                            key={item.path}
+                            href={item.path}
+                            onClick={() => onClose?.()}
+                            className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${pathname === item.path
                                 ? "bg-amber-600 text-white shadow-md shadow-amber-200"
                                 : "text-stone-600 hover:bg-amber-50 hover:text-amber-700"
-                            }`}
-                    >
-                        <span className={`${pathname === item.path ? "text-white" : "text-stone-400 group-hover:text-amber-600"}`}>
-                            {item.icon}
-                        </span>
-                        <span className="font-semibold text-sm">{item.name}</span>
-                    </Link>
-                ))}
-            </nav>
+                                }`}
+                        >
+                            <span className={`${pathname === item.path ? "text-white" : "text-stone-400 group-hover:text-amber-600"}`}>
+                                {item.icon}
+                            </span>
+                            <span className="font-semibold text-sm">{item.name}</span>
+                        </Link>
+                    ))}
+                </nav>
 
-            {/* Sidebar Footer */}
-            <div className="p-4 border-t border-stone-100">
-                <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-stone-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 group font-semibold text-sm"
-                >
-                    <span className="text-stone-400 group-hover:text-red-600">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                    </span>
-                    <span>Logout</span>
-                </button>
-            </div>
-        </aside>
+                {/* Sidebar Footer */}
+                <div className="p-4 border-t border-stone-100">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-stone-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 group font-semibold text-sm"
+                    >
+                        <span className="text-stone-400 group-hover:text-red-600">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                        </span>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </aside>
+        </>
     );
 };
 

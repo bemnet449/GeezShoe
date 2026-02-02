@@ -22,8 +22,8 @@ export default function Home() {
         </div>
 
         {/* Big Background Company Name - Watermark style */}
-        <div className="absolute top-[2%] left-1/2 -translate-x-1/2 w-full flex justify-center z-5 opacity-0 animate-dramatic-reveal pointer-events-none">
-          <div className="relative w-[98vw] h-[30vw] opacity-[0] grayscale invert">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full flex justify-center z-5 opacity-0 animate-dramatic-reveal pointer-events-none">
+          <div className="relative w-[98vw] h-[25vw] opacity-5 grayscale invert brightness-200">
             <Image
               src="/LogoBrown.PNG"
               alt="Geez Shoe Watermark"
@@ -35,15 +35,15 @@ export default function Home() {
         </div>
 
         {/* Main Brand Content - Centered */}
-        <div className="container mx-auto px-6 relative z-10 flex flex-col items-center justify-center text-center">
+        <div className="container mx-auto px-6 relative z-10 flex flex-col items-center justify-center text-center -mt-12 md:-mt-24">
           {/* Phase 1: Logo Reveal (Starts 0s, ends 2.5s) */}
           <div className="opacity-0 animate-dramatic-reveal mb-4 md:mb-2 flex flex-col items-center w-full px-1 md:px-4">
-            <div className="relative w-full max-w-[500px] h-[160px] sm:max-w-[800px] sm:h-[250px] md:max-w-[1100px] md:h-[350px] lg:w-[1400px] lg:h-[450px] mb-0 transition-all duration-500">
+            <div className="relative w-full max-w-[550px] h-[180px] sm:max-w-[900px] sm:h-[280px] md:max-w-[1200px] md:h-[380px] lg:max-w-[1500px] lg:h-[480px] mb-0 transition-all duration-500">
               <Image
                 src="/LogoBrown.PNG"
                 alt="Geez Shoe Logo"
                 fill
-                sizes="(max-width: 640px) 500px, (max-width: 768px) 800px, 1400px"
+                sizes="(max-width: 640px) 530px, (max-width: 768px) 850px, 1500px"
                 className="object-contain"
                 priority
               />

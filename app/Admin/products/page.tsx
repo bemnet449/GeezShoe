@@ -210,15 +210,15 @@ export default function ProductsPage() {
                 </div>
             )}
 
-            <main className="p-8">
-                <header className="mb-8 flex justify-between items-center">
+            <main className="p-4 md:p-8">
+                <header className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-stone-900">Product Management</h1>
-                        <p className="text-stone-500">Manage your store's inventory and catalog</p>
+                        <h1 className="text-2xl md:text-3xl font-bold text-stone-900">Product Management</h1>
+                        <p className="text-sm text-stone-500">Manage your store's inventory and catalog</p>
                     </div>
                     <Link
                         href="/Admin/products/add"
-                        className="bg-amber-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-700 transition-all shadow-md flex items-center"
+                        className="w-full sm:w-auto bg-amber-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-700 transition-all shadow-md flex items-center justify-center"
                     >
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -229,10 +229,10 @@ export default function ProductsPage() {
 
                 <div className="container mx-auto">
                     {/* Filters & Search */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 mb-8">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 md:p-6 mb-8">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                             {/* Search */}
-                            <div className="flex-1 max-w-md">
+                            <div className="flex-1 w-full lg:max-w-md">
                                 <div className="relative">
                                     <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -248,10 +248,10 @@ export default function ProductsPage() {
                             </div>
 
                             {/* Filter Buttons */}
-                            <div className="flex p-1 bg-stone-100 rounded-xl">
+                            <div className="flex p-1 bg-stone-100 rounded-xl overflow-x-auto no-scrollbar">
                                 <button
                                     onClick={() => setFilterActive("all")}
-                                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${filterActive === "all"
+                                    className={`flex-1 min-w-[80px] px-4 md:px-6 py-2 rounded-lg text-sm font-bold transition-all ${filterActive === "all"
                                         ? "bg-white text-amber-700 shadow-sm"
                                         : "text-stone-500 hover:text-stone-700"
                                         }`}
@@ -260,7 +260,7 @@ export default function ProductsPage() {
                                 </button>
                                 <button
                                     onClick={() => setFilterActive("active")}
-                                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${filterActive === "active"
+                                    className={`flex-1 min-w-[100px] px-4 md:px-6 py-2 rounded-lg text-sm font-bold transition-all ${filterActive === "active"
                                         ? "bg-white text-green-700 shadow-sm"
                                         : "text-stone-500 hover:text-stone-700"
                                         }`}
@@ -269,7 +269,7 @@ export default function ProductsPage() {
                                 </button>
                                 <button
                                     onClick={() => setFilterActive("inactive")}
-                                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${filterActive === "inactive"
+                                    className={`flex-1 min-w-[110px] px-4 md:px-6 py-2 rounded-lg text-sm font-bold transition-all ${filterActive === "inactive"
                                         ? "bg-white text-red-700 shadow-sm"
                                         : "text-stone-500 hover:text-stone-700"
                                         }`}

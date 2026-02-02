@@ -142,7 +142,7 @@ export default function OrderDetailsPage() {
     const totalAmount = order.total_prices.reduce((a, b) => a + b, 0).toFixed(2);
 
     return (
-        <div className="p-8">
+        <div className="p-4 md:p-8">
             <Link
                 href="/Admin/orders"
                 className="inline-flex items-center text-stone-500 hover:text-stone-900 transition-colors mb-6 font-bold text-sm"
@@ -153,16 +153,16 @@ export default function OrderDetailsPage() {
                 Back to Orders
             </Link>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                 {/* Order Details */}
-                <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
-                        <div className="flex justify-between items-start mb-8">
+                <div className="lg:col-span-2 space-y-6 md:space-y-8">
+                    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8">
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
                             <div>
-                                <h1 className="text-3xl font-bold text-stone-900 mb-1">Order #{order.id}</h1>
-                                <p className="text-stone-500 font-medium">Placed on {new Date(order.order_date).toLocaleString()}</p>
+                                <h1 className="text-2xl md:text-3xl font-bold text-stone-900 mb-1">Order #{order.id}</h1>
+                                <p className="text-stone-500 text-sm md:text-base font-medium">Placed on {new Date(order.order_date).toLocaleString()}</p>
                             </div>
-                            <span className={`px-4 py-2 rounded-full text-xs font-bold capitalize ${order.order_status === 'sold' ? 'bg-green-100 text-green-700' :
+                            <span className={`px-4 py-2 rounded-full text-[10px] md:text-xs font-bold capitalize ${order.order_status === 'sold' ? 'bg-green-100 text-green-700' :
                                 order.order_status === 'pending' ? 'bg-blue-100 text-blue-700' :
                                     'bg-stone-100 text-stone-700'
                                 }`}>
@@ -171,40 +171,40 @@ export default function OrderDetailsPage() {
                         </div>
 
                         <div className="space-y-6">
-                            <h2 className="text-xl font-bold text-stone-900 border-b pb-4 border-stone-100">Order Items</h2>
+                            <h2 className="text-lg md:text-xl font-bold text-stone-900 border-b pb-4 border-stone-100">Order Items</h2>
                             <div className="w-full">
                                 {order.product_names.map((name, i) => (
-                                    <div key={i} className="flex justify-between items-center py-4 border-b border-stone-50 last:border-0">
+                                    <div key={i} className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 border-b border-stone-50 last:border-0 gap-2">
                                         <div>
                                             <p className="font-bold text-stone-900">{name}</p>
-                                            <p className="text-sm text-stone-500">ID: {order.product_ids[i]}</p>
+                                            <p className="text-xs text-stone-500">ID: {order.product_ids[i]}</p>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-stone-900">${order.unit_prices[i]} × {order.quantities[i]}</p>
-                                            <p className="text-sm text-amber-600 font-black">${order.total_prices[i].toFixed(2)}</p>
+                                        <div className="text-left sm:text-right w-full sm:w-auto">
+                                            <p className="font-bold text-stone-900 text-sm sm:text-base">${order.unit_prices[i]} × {order.quantities[i]}</p>
+                                            <p className="text-xs sm:text-sm text-amber-600 font-black">${order.total_prices[i].toFixed(2)}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex justify-between items-center pt-4 mt-4 bg-stone-50 p-6 rounded-2xl">
-                                <span className="text-lg font-black text-stone-900">Total Amount</span>
-                                <span className="text-3xl font-black text-amber-600">${totalAmount}</span>
+                            <div className="flex justify-between items-center pt-4 mt-4 bg-stone-50 p-4 md:p-6 rounded-2xl">
+                                <span className="text-base md:text-lg font-black text-stone-900">Total Amount</span>
+                                <span className="text-2xl md:text-3xl font-black text-amber-600">${totalAmount}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
-                        <h2 className="text-xl font-bold text-stone-900 mb-6">Order Description</h2>
-                        <p className="text-stone-600 leading-relaxed italic">
+                    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8">
+                        <h2 className="text-lg md:text-xl font-bold text-stone-900 mb-6">Order Description</h2>
+                        <p className="text-sm md:text-base text-stone-600 leading-relaxed italic">
                             {order.order_description || "No description provided."}
                         </p>
                     </div>
                 </div>
 
                 {/* Sidebar Info */}
-                <div className="space-y-8">
-                    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
-                        <h2 className="text-xl font-bold text-stone-900 mb-6">Customer Details</h2>
+                <div className="space-y-6 md:space-y-8">
+                    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8">
+                        <h2 className="text-lg md:text-xl font-bold text-stone-900 mb-6">Customer Details</h2>
                         <div className="space-y-4">
                             <div>
                                 <p className="text-[10px] uppercase font-black tracking-widest text-stone-400 mb-1">Name</p>
@@ -212,7 +212,7 @@ export default function OrderDetailsPage() {
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase font-black tracking-widest text-stone-400 mb-1">Email</p>
-                                <p className="font-bold text-stone-900">{order.customer_email}</p>
+                                <p className="font-bold text-stone-900 truncate" title={order.customer_email}>{order.customer_email}</p>
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase font-black tracking-widest text-stone-400 mb-1">Phone</p>
@@ -220,26 +220,26 @@ export default function OrderDetailsPage() {
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase font-black tracking-widest text-stone-400 mb-1">Location</p>
-                                <p className="font-bold text-stone-900">
+                                <p className="font-bold text-stone-900 text-sm">
                                     {order.orderplace ? "📍 Addis Ababa" : "✈️ Outside Addis Ababa"}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase font-black tracking-widest text-stone-400 mb-1">Coupon Code</p>
-                                <p className={`font-black tracking-widest ${order.coupon_code ? "text-amber-600" : "text-stone-300"}`}>
+                                <p className={`font-black tracking-widest text-sm ${order.coupon_code ? "text-amber-600" : "text-stone-300"}`}>
                                     {order.coupon_code || "NONE"}
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
-                        <h2 className="text-xl font-bold text-stone-900 mb-6">Actions</h2>
-                        <div className="space-y-4">
+                    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8">
+                        <h2 className="text-lg md:text-xl font-bold text-stone-900 mb-6">Actions</h2>
+                        <div className="space-y-3 md:space-y-4">
                             <button
                                 onClick={handleMarkAsSold}
                                 disabled={actionLoading}
-                                className="w-full py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20 disabled:opacity-50"
+                                className="w-full py-3 md:py-4 rounded-xl font-black uppercase tracking-widest text-xs md:text-sm transition-all shadow-lg bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20 disabled:opacity-50"
                             >
                                 {actionLoading ? "Processing..." : "Mark as Sold"}
                             </button>
@@ -247,7 +247,7 @@ export default function OrderDetailsPage() {
                             <button
                                 onClick={handleCancelOrder}
                                 disabled={actionLoading}
-                                className="w-full py-4 rounded-xl font-bold uppercase tracking-widest text-red-600 hover:bg-red-50 border-2 border-red-50 transition-all disabled:opacity-50"
+                                className="w-full py-3 md:py-4 rounded-xl font-bold uppercase tracking-widest text-xs md:text-sm text-red-600 hover:bg-red-50 border-2 border-red-50 transition-all disabled:opacity-50"
                             >
                                 {actionLoading ? "Processing..." : "Cancel Order"}
                             </button>
