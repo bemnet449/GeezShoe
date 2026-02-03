@@ -12,11 +12,13 @@ interface Order {
     order_date: string;
     total_prices: number[];
     order_status: string;
+    is_preorder: boolean;
 }
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const [filterType, setFilterType] = useState<'all' | 'regular' | 'preorder'>('all');
 
     useEffect(() => {
         fetchOrders();
@@ -36,6 +38,12 @@ export default function OrdersPage() {
         }
         setLoading(false);
     }
+
+    const filteredOrders = orders.filter(order => {
+        if (filterType === 'regular') return !order.is_preorder;
+        if (filterType === 'preorder') return order.is_preorder;
+        return true;
+    });
 
     const calculateTotal = (prices: number[]) => {
         return prices.reduce((a, b) => a + b, 0).toFixed(2);
@@ -68,10 +76,51 @@ export default function OrdersPage() {
                     </button>
                 </header>
 
+                {/* Filter Controls */}
+                <div className="mb-8 flex flex-wrap items-center gap-3">
+                    <button
+                        onClick={() => setFilterType('all')}
+                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${filterType === 'all'
+                            ? 'bg-stone-900 text-white shadow-lg'
+                            : 'bg-white text-stone-400 border border-stone-100 hover:border-stone-900 hover:text-stone-900'
+                            }`}
+                    >
+                        All Orders
+                    </button>
+                    <button
+                        onClick={() => setFilterType('regular')}
+                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${filterType === 'regular'
+                            ? 'bg-stone-900 text-white shadow-lg'
+                            : 'bg-white text-stone-400 border border-stone-100 hover:border-stone-900 hover:text-stone-900'
+                            }`}
+                    >
+                        Regular
+                    </button>
+                    <button
+                        onClick={() => setFilterType('preorder')}
+                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${filterType === 'preorder'
+                            ? 'bg-amber-600 text-white shadow-lg'
+                            : 'bg-white text-amber-600 border border-amber-100 hover:bg-amber-50'
+                            }`}
+                    >
+                        Pre-Orders
+                    </button>
+                    <div className="ml-auto text-[10px] font-black uppercase tracking-widest text-stone-400 bg-stone-50 px-4 py-2 rounded-lg border border-stone-100">
+                        Showing {filteredOrders.length} {filterType === 'all' ? 'Orders' : filterType === 'regular' ? 'Regular Orders' : 'Pre-Orders'}
+                    </div>
+                </div>
+
                 {/* Orders - Mobile List */}
                 <div className="md:hidden space-y-4">
-                    {orders.length > 0 ? orders.map((order) => (
-                        <div key={order.id} className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
+                    {filteredOrders.length > 0 ? filteredOrders.map((order) => (
+                        <div key={order.id} className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
+                            {order.is_preorder && (
+                                <div className="absolute top-0 right-0">
+                                    <div className="bg-amber-100 text-amber-700 text-[8px] font-black px-3 py-1 uppercase tracking-widest rounded-bl-xl border-l border-b border-amber-200">
+                                        Pre-Order
+                                    </div>
+                                </div>
+                            )}
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Order #{order.id}</span>
@@ -92,7 +141,7 @@ export default function OrdersPage() {
                         </div>
                     )) : (
                         <div className="bg-white p-10 rounded-2xl border border-stone-200 text-center text-stone-500">
-                            No orders found
+                            No {filterType !== 'all' ? filterType.replace('_', ' ') : ''} orders found
                         </div>
                     )}
                 </div>
@@ -105,12 +154,13 @@ export default function OrdersPage() {
                                 <th className="px-6 py-4">ID</th>
                                 <th className="px-6 py-4">Customer</th>
                                 <th className="px-6 py-4">Order Date</th>
+                                <th className="px-6 py-4">Type</th>
                                 <th className="px-6 py-4">Total Amount</th>
                                 <th className="px-6 py-4 text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-stone-100">
-                            {orders.length > 0 ? orders.map((order) => (
+                            {filteredOrders.length > 0 ? filteredOrders.map((order) => (
                                 <tr key={order.id} className="text-sm hover:bg-stone-50 transition-colors group">
                                     <td className="px-6 py-5 font-bold text-stone-900">#{order.id}</td>
                                     <td className="px-6 py-5">
@@ -119,6 +169,17 @@ export default function OrdersPage() {
                                     </td>
                                     <td className="px-6 py-5 text-stone-600">
                                         {new Date(order.order_date).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        {order.is_preorder ? (
+                                            <span className="bg-amber-100 text-amber-700 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border border-amber-200">
+                                                Pre-Order
+                                            </span>
+                                        ) : (
+                                            <span className="bg-stone-100 text-stone-500 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border border-stone-200">
+                                                Regular
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="px-6 py-5 font-bold text-stone-900">
                                         ${calculateTotal(order.total_prices)}
@@ -134,8 +195,8 @@ export default function OrdersPage() {
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-10 text-center text-stone-500 font-medium">
-                                        No orders found
+                                    <td colSpan={6} className="px-6 py-10 text-center text-stone-500 font-medium">
+                                        No {filterType !== 'all' ? filterType.replace('_', ' ') : ''} orders found
                                     </td>
                                 </tr>
                             )}

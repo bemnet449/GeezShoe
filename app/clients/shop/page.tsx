@@ -155,13 +155,6 @@ export default function ShopPage() {
                                             Offer
                                         </div>
                                     )}
-                                    {!product.is_active && (
-                                        <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-[2px] z-10 flex items-center justify-center">
-                                            <span className="bg-white/10 text-white border border-white/20 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] leading-none">
-                                                Sold Out
-                                            </span>
-                                        </div>
-                                    )}
                                 </div>
 
                                 <div className="p-3 md:p-5 flex flex-col flex-1">
@@ -187,8 +180,8 @@ export default function ShopPage() {
                                     </div>
 
                                     <div className="mt-auto pt-3 md:pt-4 border-t border-stone-100 flex flex-col items-center gap-2 md:gap-3">
-                                        <div className={`w-full text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] py-2.5 md:py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-stone-200 text-center ${product.is_active ? 'bg-stone-900 group-hover:bg-amber-600' : 'bg-stone-400'}`}>
-                                            {product.is_active ? 'Buy Now' : 'Out of Stock'}
+                                        <div className="w-full text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] py-2.5 md:py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-stone-200 text-center bg-stone-900 group-hover:bg-amber-600">
+                                            Buy Now
                                         </div>
                                         <span className="text-[8px] md:text-[9px] uppercase font-black text-stone-400 tracking-[0.2em] md:tracking-[0.3em] opacity-50 group-hover:opacity-100 group-hover:text-amber-600 transition-all">
                                             View Details

@@ -9,6 +9,8 @@ export interface CartItem {
     qty: number;
     size?: number;
     image?: string;
+    is_preorder?: boolean;
+    original_price?: number;
 }
 
 export interface OrderFormData {
@@ -18,6 +20,7 @@ export interface OrderFormData {
     description?: string;
     isInAddis: boolean;
     coupon_code?: string;
+    delivery_location: string;
 }
 
 /**
@@ -58,6 +61,9 @@ export async function placeOrder(formData: OrderFormData): Promise<void> {
     if (!formData.phone?.trim()) {
         throw new Error("Customer phone is required");
     }
+    if (!formData.delivery_location?.trim()) {
+        throw new Error("Delivery location is required");
+    }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -68,9 +74,11 @@ export async function placeOrder(formData: OrderFormData): Promise<void> {
     // 3. Transform cart items into arrays matching Supabase schema
     const product_ids = cart.map((item) => String(item.id));
     const product_names = cart.map((item) => item.name);
+    const product_sizes = cart.map((item) => item.size ? String(item.size) : "N/A");
     const quantities = cart.map((item) => item.qty);
     const unit_prices = cart.map((item) => item.price);
     const total_prices = cart.map((item) => item.price * item.qty);
+    const order_is_preorder = cart.some(item => item.is_preorder);
 
     // 4. Insert order into Supabase
     const { error } = await supabase.from("Order").insert({
@@ -81,12 +89,15 @@ export async function placeOrder(formData: OrderFormData): Promise<void> {
         order_date: new Date().toISOString(),
         product_ids,
         product_names,
+        product_sizes,
         quantities,
         unit_prices,
         total_prices,
         order_status: "pending",
         orderplace: formData.isInAddis, // true if in Addis, false otherwise
         coupon_code: formData.coupon_code?.trim() || null,
+        delivery_location: formData.delivery_location.trim(),
+        is_preorder: order_is_preorder,
     });
 
     if (error) {

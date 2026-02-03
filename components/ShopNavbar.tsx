@@ -26,7 +26,7 @@ export default function ShopNavbar() {
     useEffect(() => {
         const updateCartCount = () => {
             const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
-            const total = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0);
+            const total = cartItems.reduce((sum: number, item: any) => sum + (item.qty || 1), 0);
             setCartCount(total);
         };
 

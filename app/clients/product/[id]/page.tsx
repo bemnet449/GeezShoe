@@ -30,6 +30,7 @@ export default function ProductDetailPage() {
     const [selectedSize, setSelectedSize] = useState<number | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPreorder, setIsPreorder] = useState(false);
 
     useEffect(() => {
         async function loadProduct() {
@@ -149,9 +150,16 @@ export default function ProductDetailPage() {
                                     <h1 className="text-3xl md:text-5xl font-black text-stone-900 mb-3 md:mb-4 tracking-tight leading-tight uppercase">{product.Name}</h1>
                                     <div className="flex items-center space-x-4 md:space-x-6 mb-4 md:mb-6">
                                         <div className="text-3xl md:text-4xl font-black text-stone-900 italic">
-                                            ${product.discount && product.discount_price ? product.discount_price : product.real_price}
+                                            ${isPreorder
+                                                ? ((product.discount && product.discount_price ? product.discount_price : product.real_price) * 0.9).toFixed(2)
+                                                : (product.discount && product.discount_price ? product.discount_price : product.real_price)
+                                            }
                                         </div>
-                                        {product.discount ? (
+                                        {isPreorder ? (
+                                            <div className="text-xl md:text-2xl text-stone-400 line-through font-bold">
+                                                ${product.discount && product.discount_price ? product.discount_price : product.real_price}
+                                            </div>
+                                        ) : product.discount ? (
                                             <div className="text-xl md:text-2xl text-stone-400 line-through font-bold">
                                                 ${product.real_price}
                                             </div>
@@ -198,7 +206,7 @@ export default function ProductDetailPage() {
                                             </span>
                                         )}
                                     </div>
-                                    <div className={`inline-flex items-center gap-3 md:gap-4 bg-white border-2 rounded-xl md:rounded-2xl p-1.5 md:p-2 transition-all duration-300 ${!selectedSize || !product.is_active
+                                    <div className={`inline-flex items-center gap-3 md:gap-4 bg-white border-2 rounded-xl md:rounded-2xl p-1.5 md:p-2 transition-all duration-300 ${!selectedSize || (!product.is_active && !isPreorder)
                                         ? 'border-stone-100 opacity-50'
                                         : 'border-stone-900 shadow-lg'
                                         }`}>
@@ -229,8 +237,8 @@ export default function ProductDetailPage() {
                                                     setQuantity(quantity + 1);
                                                 }
                                             }}
-                                            disabled={!selectedSize || quantity >= 15 || !product.is_active}
-                                            className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-lg md:text-xl transition-all duration-200 ${!selectedSize || quantity >= 15 || !product.is_active
+                                            disabled={!selectedSize || quantity >= 15 || (!product.is_active && !isPreorder)}
+                                            className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-lg md:text-xl transition-all duration-200 ${!selectedSize || quantity >= 15 || (!product.is_active && !isPreorder)
                                                 ? 'bg-stone-50 text-stone-200 cursor-not-allowed'
                                                 : 'bg-amber-600 text-white hover:bg-amber-700 cursor-pointer'
                                                 }`}
@@ -240,25 +248,54 @@ export default function ProductDetailPage() {
                                     </div>
                                 </div>
 
+                                {/* Pre-order Option */}
+                                {!product.is_active && (
+                                    <div className="mb-8 p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-200 shadow-lg shadow-amber-200/20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                        <label className="flex items-center space-x-4 cursor-pointer group">
+                                            <div className="relative">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isPreorder}
+                                                    onChange={(e) => setIsPreorder(e.target.checked)}
+                                                    className="w-6 h-6 rounded-lg border-2 border-amber-600 text-amber-600 focus:ring-amber-600 focus:ring-offset-0 cursor-pointer transition-all duration-300"
+                                                />
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center space-x-2">
+                                                    <span className="text-sm md:text-base font-black text-stone-900 group-hover:text-amber-700 transition-colors uppercase tracking-tight">
+                                                        Pre-Order (Get 10% Off)
+                                                    </span>
+                                                    <span className="bg-amber-600 text-white text-[8px] md:text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Save 10%</span>
+                                                </div>
+                                                <p className="text-xs text-stone-500 mt-1 font-medium">This item is currently out of stock. Pre-order now and get an exclusive discount!</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                )}
+
                                 {/* Actions */}
                                 <div className="flex flex-col gap-3 md:gap-4 mb-10 md:mb-12">
                                     <button
-                                        disabled={!selectedSize || !product.is_active}
+                                        disabled={!selectedSize || (!product.is_active && !isPreorder)}
                                         onClick={() => {
                                             if (!selectedSize) return;
+                                            const basePrice = product.discount && product.discount_price ? product.discount_price : product.real_price;
                                             addToCart({
                                                 id: String(product.id),
                                                 name: product.Name,
-                                                price: product.discount && product.discount_price ? product.discount_price : product.real_price,
+                                                price: isPreorder ? basePrice * 0.9 : basePrice,
                                                 qty: quantity,
                                                 size: selectedSize,
                                                 image: product.image_urls?.[0] || "",
+                                                is_preorder: isPreorder,
+                                                original_price: basePrice,
                                             });
-                                            showToast(`Added to cart!`, "success");
+                                            showToast(isPreorder ? `Pre-order added to cart!` : `Added to cart!`, "success");
                                             setQuantity(1);
                                             setSelectedSize(null);
+                                            setIsPreorder(false);
                                         }}
-                                        className={`flex items-center justify-center space-x-3 py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${selectedSize && product.is_active
+                                        className={`flex items-center justify-center space-x-3 py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${selectedSize && (product.is_active || isPreorder)
                                             ? "bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20"
                                             : "bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200 shadow-none"
                                             }`}
@@ -268,20 +305,23 @@ export default function ProductDetailPage() {
                                     </button>
 
                                     <button
-                                        disabled={!selectedSize || !product.is_active}
+                                        disabled={!selectedSize || (!product.is_active && !isPreorder)}
                                         onClick={() => {
                                             if (!selectedSize) return;
+                                            const basePrice = product.discount && product.discount_price ? product.discount_price : product.real_price;
                                             addToCart({
                                                 id: String(product.id),
                                                 name: product.Name,
-                                                price: product.discount && product.discount_price ? product.discount_price : product.real_price,
+                                                price: isPreorder ? basePrice * 0.9 : basePrice,
                                                 qty: quantity,
                                                 size: selectedSize,
                                                 image: product.image_urls?.[0] || "",
+                                                is_preorder: isPreorder,
+                                                original_price: basePrice,
                                             });
                                             router.push("/clients/checkout");
                                         }}
-                                        className={`flex items-center justify-center py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${selectedSize && product.is_active
+                                        className={`flex items-center justify-center py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${selectedSize && (product.is_active || isPreorder)
                                             ? "bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20"
                                             : "bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200 shadow-none"
                                             }`}

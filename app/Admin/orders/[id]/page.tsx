@@ -15,6 +15,7 @@ interface Order {
     order_date: string;
     product_ids: string[];
     product_names: string[];
+    product_sizes: string[];
     quantities: number[];
     unit_prices: number[];
     total_prices: number[];
@@ -141,6 +142,22 @@ export default function OrderDetailsPage() {
 
     const totalAmount = order.total_prices.reduce((a, b) => a + b, 0).toFixed(2);
 
+    // Grouping items by product name while keeping size-specific data
+    const groupedItems = () => {
+        const grouped: Record<string, any[]> = {};
+        order.product_names.forEach((name, i) => {
+            if (!grouped[name]) grouped[name] = [];
+            grouped[name].push({
+                index: i,
+                size: order.product_sizes ? order.product_sizes[i] : "N/A",
+                qty: order.quantities[i],
+                unitPrice: order.unit_prices[i],
+                totalPrice: order.total_prices[i]
+            });
+        });
+        return grouped;
+    };
+
     return (
         <div className="p-4 md:p-8">
             <Link
@@ -171,24 +188,42 @@ export default function OrderDetailsPage() {
                         </div>
 
                         <div className="space-y-6">
-                            <h2 className="text-lg md:text-xl font-bold text-stone-900 border-b pb-4 border-stone-100">Order Items</h2>
-                            <div className="w-full">
-                                {order.product_names.map((name, i) => (
-                                    <div key={i} className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 border-b border-stone-50 last:border-0 gap-2">
-                                        <div>
-                                            <p className="font-bold text-stone-900">{name}</p>
-                                            <p className="text-xs text-stone-500">ID: {order.product_ids[i]}</p>
+                            <h2 className="text-lg md:text-xl font-bold text-stone-900 border-b pb-4 border-stone-100 uppercase tracking-widest text-xs">Order Items</h2>
+                            <div className="space-y-6">
+                                {Object.entries(groupedItems()).map(([productName, variants]) => (
+                                    <div key={productName} className="bg-stone-50 rounded-2xl p-4 md:p-6 border border-stone-100 shadow-sm">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="font-black text-stone-900 uppercase tracking-tight text-base md:text-lg leading-tight">{productName}</h3>
+                                            <span className="bg-stone-200 text-stone-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                                {variants.length} Entry{variants.length > 1 ? 's' : ''}
+                                            </span>
                                         </div>
-                                        <div className="text-left sm:text-right w-full sm:w-auto">
-                                            <p className="font-bold text-stone-900 text-sm sm:text-base">${order.unit_prices[i]} × {order.quantities[i]}</p>
-                                            <p className="text-xs sm:text-sm text-amber-600 font-black">${order.total_prices[i].toFixed(2)}</p>
+                                        <div className="space-y-3">
+                                            {variants.map((variant, idx) => (
+                                                <div key={idx} className="flex justify-between items-center bg-white p-3 rounded-xl border border-stone-100">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="bg-amber-100 text-amber-700 w-10 h-10 rounded-lg flex items-center justify-center font-black text-xs border border-amber-200 shadow-sm">
+                                                            {variant.size}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest leading-none mb-1">Size Selection</p>
+                                                            <p className="text-sm font-bold text-stone-900">Shoe Size: {variant.size}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest leading-none mb-1">Quantity & Price</p>
+                                                        <p className="text-xs font-bold text-stone-900">Qty {variant.qty} × ${variant.unitPrice.toFixed(2)}</p>
+                                                        <p className="text-sm font-black text-amber-600">${variant.totalPrice.toFixed(2)}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex justify-between items-center pt-4 mt-4 bg-stone-50 p-4 md:p-6 rounded-2xl">
-                                <span className="text-base md:text-lg font-black text-stone-900">Total Amount</span>
-                                <span className="text-2xl md:text-3xl font-black text-amber-600">${totalAmount}</span>
+                            <div className="flex justify-between items-center pt-4 mt-4 bg-stone-900 p-6 md:p-8 rounded-3xl shadow-xl shadow-stone-900/10">
+                                <span className="text-base md:text-lg font-black text-white uppercase tracking-widest">Grand Total</span>
+                                <span className="text-2xl md:text-4xl font-black text-amber-500 tracking-tighter italic">${totalAmount}</span>
                             </div>
                         </div>
                     </div>
