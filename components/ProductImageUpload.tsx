@@ -14,7 +14,7 @@ interface ProductImageUploadProps {
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MIN_IMAGES = 1;
-const MAX_IMAGES = 2;
+const MAX_IMAGES = 3;
 
 export default function ProductImageUpload({
     productName,
@@ -23,30 +23,32 @@ export default function ProductImageUpload({
     existingUrls = [],
     mode,
 }: ProductImageUploadProps) {
-    // Initialize with 2 slots, potentially filled by existingUrls
+    // Initialize with 3 slots, potentially filled by existingUrls
     const [slots, setSlots] = useState<(string | null)[]>([
         existingUrls[0] || null,
-        existingUrls[1] || null
+        existingUrls[1] || null,
+        existingUrls[2] || null
     ]);
 
     // Track uploading state for each slot independently
-    const [uploadingState, setUploadingState] = useState<[boolean, boolean]>([false, false]);
-    const [errors, setErrors] = useState<[string, string]>(["", ""]);
+    const [uploadingState, setUploadingState] = useState<[boolean, boolean, boolean]>([false, false, false]);
+    const [errors, setErrors] = useState<[string, string, string]>(["", "", ""]);
 
     // Sync slots when existingUrls change (important for edit mode loading)
     useEffect(() => {
         if (existingUrls.length > 0) {
             setSlots([
                 existingUrls[0] || null,
-                existingUrls[1] || null
+                existingUrls[1] || null,
+                existingUrls[2] || null
             ]);
         }
     }, [existingUrls]);
 
-    // Track if either slot is uploading
+    // Track if any slot is uploading
     useEffect(() => {
         if (onUploadingChange) {
-            onUploadingChange(uploadingState[0] || uploadingState[1]);
+            onUploadingChange(uploadingState[0] || uploadingState[1] || uploadingState[2]);
         }
     }, [uploadingState, onUploadingChange]);
 
@@ -56,12 +58,12 @@ export default function ProductImageUpload({
         onUploadComplete(validUrls);
     };
 
-    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, slotIndex: 0 | 1) => {
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, slotIndex: 0 | 1 | 2) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         // Clear error for this slot
-        const newErrors = [...errors] as [string, string];
+        const newErrors = [...errors] as [string, string, string];
         newErrors[slotIndex] = "";
         setErrors(newErrors);
 
@@ -85,7 +87,7 @@ export default function ProductImageUpload({
 
         // Set uploading state
         setUploadingState(prev => {
-            const next = [...prev] as [boolean, boolean];
+            const next = [...prev] as [boolean, boolean, boolean];
             next[slotIndex] = true;
             return next;
         });
@@ -133,7 +135,7 @@ export default function ProductImageUpload({
             setErrors(newErrors);
         } finally {
             setUploadingState(prev => {
-                const next = [...prev] as [boolean, boolean];
+                const next = [...prev] as [boolean, boolean, boolean];
                 next[slotIndex] = false;
                 return next;
             });
@@ -142,7 +144,7 @@ export default function ProductImageUpload({
         }
     };
 
-    const handleRemove = (slotIndex: 0 | 1) => {
+    const handleRemove = (slotIndex: 0 | 1 | 2) => {
         const newSlots = [...slots];
         newSlots[slotIndex] = null;
         setSlots(newSlots);
@@ -153,15 +155,15 @@ export default function ProductImageUpload({
         <div className="space-y-4">
             {/* Info / instructions */}
             <div className="flex justify-between items-center text-sm text-stone-500 mb-2">
-                <p>Upload 1 or 2 images. Left is Primary, Right is Secondary.</p>
+                <p>Upload 1-3 images. First is Primary.</p>
                 <div className="text-xs">
-                    {slots.filter(s => s).length} / 2 uploaded
+                    {slots.filter(s => s).length} / 3 uploaded
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-                {[0, 1].map((index) => {
-                    const slotIndex = index as 0 | 1;
+            <div className="grid grid-cols-3 gap-4">
+                {[0, 1, 2].map((index) => {
+                    const slotIndex = index as 0 | 1 | 2;
                     const url = slots[slotIndex];
                     const isUploading = uploadingState[slotIndex];
                     const error = errors[slotIndex];

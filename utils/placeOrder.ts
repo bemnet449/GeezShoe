@@ -80,10 +80,13 @@ export async function placeOrder(formData: OrderFormData): Promise<void> {
     const total_prices = cart.map((item) => item.price * item.qty);
     const order_is_preorder = cart.some(item => item.is_preorder);
 
+    // Sanitize email
+    const sanitizedEmail = formData.email.trim().toLowerCase();
+
     // 4. Insert order into Supabase
-    const { error } = await supabase.from("Order").insert({
+    const { error } = await supabase.from("order").insert({
         customer_name: formData.name.trim(),
-        customer_email: formData.email.trim(),
+        customer_email: sanitizedEmail,
         customer_Phone: formData.phone.trim(),
         order_description: formData.description?.trim() || "",
         order_date: new Date().toISOString(),

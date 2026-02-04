@@ -37,7 +37,7 @@ export interface OrderFormData {
 /**
  * Order structure as stored in Supabase
  */
-export interface Order {
+export interface order {
     /** Auto-generated order ID */
     id?: number;
     /** Customer full name */

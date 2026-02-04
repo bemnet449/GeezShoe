@@ -37,7 +37,7 @@ export default function ProductDetailPage() {
             if (!id) return;
             setLoading(true);
             const { data, error } = await supabase
-                .from("Products")
+                .from("products")
                 .select("id, Name, description, real_price, fake_price, discount, discount_price, image_urls, sizes_available, is_active")
                 .eq("id", id)
                 .single();

@@ -47,7 +47,7 @@ export default function ProductsPage() {
     const loadProducts = async () => {
         try {
             const { data, error } = await supabase
-                .from("Products")
+                .from("products")
                 .select("*")
                 .order("created_at", { ascending: false });
 
@@ -63,7 +63,7 @@ export default function ProductsPage() {
     const toggleProductStatus = async (id: number, currentStatus: boolean) => {
         try {
             const { error } = await supabase
-                .from("Products")
+                .from("products")
                 .update({ is_active: !currentStatus })
                 .eq("id", id);
 
@@ -105,7 +105,7 @@ export default function ProductsPage() {
             // We use both name and id just in case there's an RLS issue or id mismatch
             console.log("Executing DB delete for ID:", deleteModal.productId);
             const { error: dbError, data: deletedData } = await supabase
-                .from("Products")
+                .from("products")
                 .delete()
                 .eq("id", deleteModal.productId)
                 .select();

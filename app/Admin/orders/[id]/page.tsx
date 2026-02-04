@@ -6,11 +6,12 @@ import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { showToast } from "@/components/Toast";
 
-interface Order {
+interface order {
     id: number;
     customer_name: string;
     customer_email: string;
     customer_Phone: string;
+    delivery_location: string;
     order_description: string;
     order_date: string;
     product_ids: string[];
@@ -24,12 +25,18 @@ interface Order {
     coupon_code: string | null;
 }
 
+interface ProductImage {
+    productId: string;
+    imageUrl: string | null;
+}
+
 export default function OrderDetailsPage() {
     const { id } = useParams();
     const router = useRouter();
-    const [order, setOrder] = useState<Order | null>(null);
+    const [order, setOrder] = useState<order | null>(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+    const [productImages, setProductImages] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (id) fetchOrder();
@@ -38,7 +45,7 @@ export default function OrderDetailsPage() {
     async function fetchOrder() {
         setLoading(true);
         const { data, error } = await supabase
-            .from("Order")
+            .from("order")
             .select("*")
             .eq("id", id)
             .single();
@@ -48,8 +55,30 @@ export default function OrderDetailsPage() {
             showToast("Failed to fetch order details", "error");
         } else {
             setOrder(data);
+            // Fetch product images
+            if (data?.product_ids) {
+                fetchProductImages(data.product_ids);
+            }
         }
         setLoading(false);
+    }
+
+    async function fetchProductImages(productIds: string[]) {
+        const imageMap: Record<string, string> = {};
+
+        for (const productId of productIds) {
+            const { data, error } = await supabase
+                .from("products")
+                .select("image_urls")
+                .eq("id", productId)
+                .single();
+
+            if (!error && data?.image_urls && data.image_urls.length > 0) {
+                imageMap[productId] = data.image_urls[0];
+            }
+        }
+
+        setProductImages(imageMap);
     }
 
     async function handleMarkAsSold() {
@@ -57,6 +86,66 @@ export default function OrderDetailsPage() {
 
         setActionLoading(true);
         try {
+            /* 1. Add records to SALES table - Combine duplicate products */
+            // Group products by ID and sum quantities
+            const productMap = new Map<string, { product_id: string; product_name: string; quantity_sold: number }>();
+
+            order.product_ids.forEach((productId, index) => {
+                if (productMap.has(productId)) {
+                    // Product already exists, add to quantity
+                    const existing = productMap.get(productId)!;
+                    existing.quantity_sold += (order.quantities[index] || 1);
+                } else {
+                    // New product, add to map
+                    productMap.set(productId, {
+                        product_id: productId,
+                        product_name: order.product_names[index],
+                        quantity_sold: order.quantities[index] || 1,
+                    });
+                }
+            });
+
+            // Convert map to array for insertion
+            const salesData = Array.from(productMap.values());
+
+            const { error: salesError } = await supabase
+                .from("sales")
+                .insert(salesData);
+
+            if (salesError) throw salesError;
+
+            /* 2. Upsert CUSTOMER record */
+
+            const totalItemsPurchased = order.quantities.reduce(
+                (sum, q) => sum + (q || 1),
+                0
+            );
+
+            const { data: existingCustomer } = await supabase
+                .from("customers")
+                .select("total_items_purchased")
+                .eq("email", order.customer_email)
+                .single();
+
+            const newTotal =
+                (existingCustomer?.total_items_purchased || 0) + totalItemsPurchased;
+
+            const { error: customerError } = await supabase
+                .from("customers")
+                .upsert(
+                    {
+                        name: order.customer_name,
+                        email: order.customer_email,
+                        phone: order.customer_Phone,
+                        total_items_purchased: newTotal,
+                    },
+                    { onConflict: "email" }
+                );
+
+            if (customerError) throw customerError;
+
+
+
             // 1. Decrease stock for each product
             for (let i = 0; i < order.product_ids.length; i++) {
                 const productId = order.product_ids[i];
@@ -64,7 +153,7 @@ export default function OrderDetailsPage() {
 
                 // Fetch current stock
                 const { data: productData, error: fetchError } = await supabase
-                    .from("Products")
+                    .from("products")
                     .select("item_number")
                     .eq("id", productId)
                     .single();
@@ -77,7 +166,7 @@ export default function OrderDetailsPage() {
                 // Update stock
                 const newStock = Math.max(0, productData.item_number - (quantity || 1));
                 const { error: stockError } = await supabase
-                    .from("Products")
+                    .from("products")
                     .update({
                         item_number: newStock,
                         is_active: newStock > 0
@@ -91,7 +180,7 @@ export default function OrderDetailsPage() {
 
             // 2. Delete the order record
             const { error: deleteError } = await supabase
-                .from("Order")
+                .from("order")
                 .delete()
                 .eq("id", order.id);
 
@@ -112,7 +201,7 @@ export default function OrderDetailsPage() {
         setActionLoading(true);
         try {
             const { error } = await supabase
-                .from("Order")
+                .from("order")
                 .delete()
                 .eq("id", order.id);
 
@@ -175,54 +264,88 @@ export default function OrderDetailsPage() {
                 <div className="lg:col-span-2 space-y-6 md:space-y-8">
                     <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8">
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
-                            <div>
-                                <h1 className="text-2xl md:text-3xl font-bold text-stone-900 mb-1">Order #{order.id}</h1>
-                                <p className="text-stone-500 text-sm md:text-base font-medium">Placed on {new Date(order.order_date).toLocaleString()}</p>
+                            <div className="flex-1">
+                                <h1 className="text-3xl md:text-4xl font-black text-stone-900 mb-2 tracking-tight">Order Details</h1>
+                                <div className="flex items-center gap-3 text-sm md:text-base">
+                                    <svg className="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <p className="text-stone-600 font-medium">{new Date(order.order_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                    <span className="text-stone-300">•</span>
+                                    <p className="text-stone-600 font-medium">{new Date(order.order_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                                </div>
                             </div>
-                            <span className={`px-4 py-2 rounded-full text-[10px] md:text-xs font-bold capitalize ${order.order_status === 'sold' ? 'bg-green-100 text-green-700' :
-                                order.order_status === 'pending' ? 'bg-blue-100 text-blue-700' :
-                                    'bg-stone-100 text-stone-700'
+                            <span className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm ${order.order_status === 'sold' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                order.order_status === 'pending' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                    'bg-stone-100 text-stone-700 border border-stone-200'
                                 }`}>
                                 {order.order_status}
                             </span>
                         </div>
 
                         <div className="space-y-6">
-                            <h2 className="text-lg md:text-xl font-bold text-stone-900 border-b pb-4 border-stone-100 uppercase tracking-widest text-xs">Order Items</h2>
+                            <h2 className="text-xl md:text-2xl font-black text-stone-900 border-b-2 pb-4 border-stone-200 uppercase tracking-tight">Ordered Items</h2>
                             <div className="space-y-6">
                                 {Object.entries(groupedItems()).map(([productName, variants]) => (
-                                    <div key={productName} className="bg-stone-50 rounded-2xl p-4 md:p-6 border border-stone-100 shadow-sm">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h3 className="font-black text-stone-900 uppercase tracking-tight text-base md:text-lg leading-tight">{productName}</h3>
-                                            <span className="bg-stone-200 text-stone-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
-                                                {variants.length} Entry{variants.length > 1 ? 's' : ''}
+                                    <div key={productName} className="bg-gradient-to-br from-stone-50 to-stone-100 rounded-3xl p-6 md:p-8 border-2 border-stone-200 shadow-lg">
+                                        <div className="flex justify-between items-center mb-6 pb-4 border-b border-stone-300">
+                                            <h3 className="font-black text-stone-900 uppercase tracking-tight text-xl md:text-2xl leading-tight">{productName}</h3>
+                                            <span className="bg-amber-600 text-white text-sm font-black px-4 py-2 rounded-full uppercase tracking-wider shadow-md">
+                                                {variants.length} {variants.length > 1 ? 'Variants' : 'Variant'}
                                             </span>
                                         </div>
-                                        <div className="space-y-3">
-                                            {variants.map((variant, idx) => (
-                                                <div key={idx} className="flex justify-between items-center bg-white p-3 rounded-xl border border-stone-100">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="bg-amber-100 text-amber-700 w-10 h-10 rounded-lg flex items-center justify-center font-black text-xs border border-amber-200 shadow-sm">
-                                                            {variant.size}
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest leading-none mb-1">Size Selection</p>
-                                                            <p className="text-sm font-bold text-stone-900">Shoe Size: {variant.size}</p>
+                                        <div className="grid grid-cols-1 gap-4 md:gap-5">
+                                            {variants.map((variant, idx) => {
+                                                const productId = order.product_ids[variant.index];
+                                                const imageUrl = productImages[productId];
+
+                                                return (
+                                                    <div key={idx} className="bg-white p-5 md:p-6 rounded-2xl border-2 border-stone-200 shadow-sm hover:shadow-md transition-all">
+                                                        <div className="flex flex-col md:flex-row gap-5 md:gap-6 items-start md:items-center">
+                                                            {/* Product Image - Larger */}
+                                                            {imageUrl && (
+                                                                <div className="w-full md:w-32 h-32 rounded-xl overflow-hidden border-2 border-stone-200 flex-shrink-0 shadow-sm">
+                                                                    <img
+                                                                        src={imageUrl}
+                                                                        alt={order.product_names[variant.index]}
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                </div>
+                                                            )}
+
+                                                            {/* Size Badge - Larger */}
+                                                            <div className="bg-gradient-to-br from-amber-400 to-amber-500 text-white w-20 h-20 rounded-2xl flex flex-col items-center justify-center font-black text-2xl border-2 border-amber-600 shadow-lg flex-shrink-0">
+                                                                <span className="text-xs opacity-90">Size</span>
+                                                                <span>{variant.size}</span>
+                                                            </div>
+
+                                                            {/* Details - Larger Text */}
+                                                            <div className="flex-1">
+                                                                <p className="text-xs font-black text-stone-400 uppercase tracking-widest leading-none mb-2">Product Details</p>
+                                                                <p className="text-lg md:text-xl font-bold text-stone-900 mb-1">Shoe Size: {variant.size}</p>
+                                                                <p className="text-sm text-stone-600 font-medium">Quantity: {variant.qty} {variant.qty > 1 ? 'pairs' : 'pair'}</p>
+                                                            </div>
+
+                                                            {/* Pricing - Larger and More Prominent */}
+                                                            <div className="w-full md:w-auto text-left md:text-right bg-stone-50 p-4 rounded-xl border border-stone-200">
+                                                                <p className="text-xs font-black text-stone-400 uppercase tracking-widest leading-none mb-2">Pricing</p>
+                                                                <p className="text-base font-bold text-stone-700 mb-1">
+                                                                    {variant.qty} × ${variant.unitPrice.toFixed(2)}
+                                                                </p>
+                                                                <p className="text-2xl md:text-3xl font-black text-amber-600">
+                                                                    ${variant.totalPrice.toFixed(2)}
+                                                                </p>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest leading-none mb-1">Quantity & Price</p>
-                                                        <p className="text-xs font-bold text-stone-900">Qty {variant.qty} × ${variant.unitPrice.toFixed(2)}</p>
-                                                        <p className="text-sm font-black text-amber-600">${variant.totalPrice.toFixed(2)}</p>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex justify-between items-center pt-4 mt-4 bg-stone-900 p-6 md:p-8 rounded-3xl shadow-xl shadow-stone-900/10">
-                                <span className="text-base md:text-lg font-black text-white uppercase tracking-widest">Grand Total</span>
+                            <div className="flex justify-between items-center pt-6 mt-6 bg-gradient-to-r from-stone-900 to-stone-800 p-8 md:p-10 rounded-3xl shadow-2xl shadow-stone-900/20">
+                                <span className="text-lg md:text-xl font-black text-white uppercase tracking-widest">Grand Total</span>
                                 <span className="text-2xl md:text-4xl font-black text-amber-500 tracking-tighter italic">${totalAmount}</span>
                             </div>
                         </div>
@@ -258,6 +381,10 @@ export default function OrderDetailsPage() {
                                 <p className="font-bold text-stone-900 text-sm">
                                     {order.orderplace ? "📍 Addis Ababa" : "✈️ Outside Addis Ababa"}
                                 </p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] uppercase font-black tracking-widest text-stone-400 mb-1">Delivery Location</p>
+                                <p className="font-bold text-stone-900">{order.delivery_location}</p>
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase font-black tracking-widest text-stone-400 mb-1">Coupon Code</p>

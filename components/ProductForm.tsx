@@ -133,7 +133,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
             (async () => {
                 try {
                     const { data, error } = await supabase
-                        .from("Products")
+                        .from("products")
                         .select("*")
                         .eq("id", productId)
                         .single();
@@ -248,7 +248,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
             console.log("Form Submission Payload:", payload);
 
             if (mode === "create") {
-                const { error, data } = await supabase.from("Products").insert([payload]).select();
+                const { error, data } = await supabase.from("products").insert([payload]).select();
                 if (error) {
                     console.error("Supabase Insert detailed error:", error);
                     throw new Error(`Database Error: ${error.message} (Code: ${error.code})`);
@@ -256,7 +256,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
                 console.log("Insert success:", data);
             } else {
                 const { error, data } = await supabase
-                    .from("Products")
+                    .from("products")
                     .update(payload)
                     .eq("id", productId)
                     .select();

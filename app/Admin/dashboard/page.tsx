@@ -39,7 +39,7 @@ const AdminDashboard = () => {
 
             // Fetch Products for count and out of stock check
             const { data: products, error: productsError } = await supabase
-                .from('Products')
+                .from('products')
                 .select('item_number');
 
             if (ordersError || productsError) throw new Error("Failed to fetch dashboard data");

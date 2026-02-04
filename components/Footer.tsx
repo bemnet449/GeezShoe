@@ -15,6 +15,7 @@ export default function Footer() {
                                 src="/LogoBrown.PNG"
                                 alt="Geez Shoe"
                                 fill
+                                sizes="128px"
                                 className="object-contain brightness-0 invert opacity-90"
                             />
                         </Link>

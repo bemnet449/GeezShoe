@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 
-interface Order {
+interface order {
     id: number;
     customer_name: string;
     customer_email: string;
@@ -16,7 +16,7 @@ interface Order {
 }
 
 export default function OrdersPage() {
-    const [orders, setOrders] = useState<Order[]>([]);
+    const [orders, setOrders] = useState<order[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterType, setFilterType] = useState<'all' | 'regular' | 'preorder'>('all');
 
@@ -27,7 +27,7 @@ export default function OrdersPage() {
     async function fetchOrders() {
         setLoading(true);
         const { data, error } = await supabase
-            .from("Order")
+            .from("order")
             .select("*")
             .order("order_date", { ascending: false });
 
