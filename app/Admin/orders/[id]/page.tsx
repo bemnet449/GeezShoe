@@ -116,33 +116,44 @@ export default function OrderDetailsPage() {
 
             /* 2. Upsert CUSTOMER record */
 
-            const totalItemsPurchased = order.quantities.reduce(
-                (sum, q) => sum + (q || 1),
-                0
-            );
+            // Calculate total items in the order
+const totalItemsPurchased = order.quantities.reduce(
+    (sum, q) => sum + (q || 1),
+    0
+);
 
-            const { data: existingCustomer } = await supabase
-                .from("customers")
-                .select("total_items_purchased")
-                .eq("email", order.customer_email)
-                .single();
+// Normalize phone
+const phone = order.customer_Phone.trim();
 
-            const newTotal =
-                (existingCustomer?.total_items_purchased || 0) + totalItemsPurchased;
+// Fetch existing customer by phone
+const { data: existingCustomer, error: fetchError } = await supabase
+    .from("customers")
+    .select("total_items_purchased")
+    .eq("phone", phone)
+    .single();
 
-            const { error: customerError } = await supabase
-                .from("customers")
-                .upsert(
-                    {
-                        name: order.customer_name,
-                        email: order.customer_email,
-                        phone: order.customer_Phone,
-                        total_items_purchased: newTotal,
-                    },
-                    { onConflict: "email" }
-                );
+if (fetchError && fetchError.code !== "PGRST116") { // PGRST116 = no rows found
+    throw fetchError;
+}
 
-            if (customerError) throw customerError;
+const newTotal =
+    (existingCustomer?.total_items_purchased || 0) + totalItemsPurchased;
+
+// Upsert customer
+const { error: customerError } = await supabase
+    .from("customers")
+    .upsert(
+        {
+            name: order.customer_name,
+            email: order.customer_email,
+            phone: phone,
+            total_items_purchased: newTotal,
+        },
+        { onConflict: "phone" } // phone must be UNIQUE
+    );
+
+if (customerError) throw customerError;
+
 
 
 

@@ -53,12 +53,6 @@ export default function CheckoutPage() {
             newErrors.name = "Name is required";
         }
 
-        if (!formData.email.trim()) {
-            newErrors.email = "Email is required";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = "Invalid email format";
-        }
-
         if (!formData.phone.trim()) {
             newErrors.phone = "Phone number is required";
         } else if (!/^\+?[\d\s-()]+$/.test(formData.phone)) {
@@ -233,7 +227,7 @@ export default function CheckoutPage() {
                         </div>
 
                         {/* Customer Form Column */}
-                        <div>
+                        <div className="bg-white p-8 rounded-2xl shadow-lg border border-stone-200">
                             <h2 className="text-2xl font-black text-stone-900 mb-6 uppercase tracking-tight">
                                 Customer Information
                             </h2>
@@ -259,36 +253,32 @@ export default function CheckoutPage() {
                                     {errors.name && <p className="text-red-600 text-[10px] font-bold mt-1 uppercase tracking-tight">{errors.name}</p>}
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-xs font-black uppercase tracking-widest text-stone-700 mb-2">
-                                            Email Address *
-                                        </label>
-                                        <input
-                                            type="email"
-                                            value={formData.email}
-                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                            className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${errors.email ? "border-red-300 bg-red-50 focus:ring-red-500/10" : "border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10"
-                                                } focus:outline-none font-bold text-stone-900 group shadow-sm hover:border-stone-300`}
-                                            placeholder="john@example.com"
-                                        />
-                                        {errors.email && <p className="text-red-600 text-[10px] font-bold mt-1 uppercase tracking-tight">{errors.email}</p>}
-                                    </div>
+                                <div>
+                                    <label className="block text-xs font-black uppercase tracking-widest text-stone-700 mb-2">
+                                        Email Address (Optional)
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-xl border-2 border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10 focus:outline-none font-bold text-stone-900 shadow-sm hover:border-stone-300"
+                                        placeholder="john@example.com"
+                                    />
+                                </div>
 
-                                    <div>
-                                        <label className="block text-xs font-black uppercase tracking-widest text-stone-700 mb-2">
-                                            Phone Number *
-                                        </label>
-                                        <input
-                                            type="tel"
-                                            value={formData.phone}
-                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                            className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${errors.phone ? "border-red-300 bg-red-50 focus:ring-red-500/10" : "border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10"
-                                                } focus:outline-none font-bold text-stone-900 group shadow-sm hover:border-stone-300`}
-                                            placeholder="+251 912 345 678"
-                                        />
-                                        {errors.phone && <p className="text-red-600 text-[10px] font-bold mt-1 uppercase tracking-tight">{errors.phone}</p>}
-                                    </div>
+                                <div>
+                                    <label className="block text-xs font-black uppercase tracking-widest text-stone-700 mb-2">
+                                        Phone Number *
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${errors.phone ? "border-red-300 bg-red-50 focus:ring-red-500/10" : "border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10"
+                                            } focus:outline-none font-bold text-stone-900 group shadow-sm hover:border-stone-300`}
+                                        placeholder="+251 912 345 678"
+                                    />
+                                    {errors.phone && <p className="text-red-600 text-[10px] font-bold mt-1 uppercase tracking-tight">{errors.phone}</p>}
                                 </div>
 
                                 <div>

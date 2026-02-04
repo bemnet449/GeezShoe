@@ -87,6 +87,28 @@ export default function ProductDetailPage() {
                                     className="object-contain"
                                     priority
                                 />
+                                <button
+                                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-stone-900 p-2 rounded-full"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveImage((prev) => (prev - 1 + product.image_urls.length) % product.image_urls.length);
+                                    }}
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <button
+                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-stone-900 p-2 rounded-full"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveImage((prev) => (prev + 1) % product.image_urls.length);
+                                    }}
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     )}

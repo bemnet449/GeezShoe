@@ -26,6 +26,14 @@ export default function SalesPage() {
     const router = useRouter();
 
     useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                router.push("/Admin/Login");
+            }
+        };
+
+        checkAuth();
         fetchSales();
     }, []);
 

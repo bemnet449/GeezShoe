@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+const PRODUCTS_PER_PAGE = 4; // Number of products per page
 
 interface Product {
     id: number;
@@ -23,6 +24,9 @@ export default function ProductsPage() {
     const router = useRouter();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const [cursor, setCursor] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterActive, setFilterActive] = useState<"all" | "active" | "inactive">("all");
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; productId: number | null; imageUrls: string[]; productName: string }>({
@@ -31,11 +35,42 @@ export default function ProductsPage() {
         imageUrls: [],
         productName: ""
     });
+    const observerTarget = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         checkAuth();
-        loadProducts();
+        loadProducts(null, true);
     }, []);
+
+    // Reset pagination state when searchQuery or filterActive changes
+    useEffect(() => {
+        setProducts([]);
+        setCursor(null);
+        setHasMore(true);
+        loadProducts(null, true);
+    }, [searchQuery, filterActive]);
+
+    // Guard IntersectionObserver execution to prevent duplicate fetches
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+                    loadProducts(cursor, false);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (observerTarget.current) {
+            observer.observe(observerTarget.current);
+        }
+
+        return () => {
+            if (observerTarget.current) {
+                observer.unobserve(observerTarget.current);
+            }
+        };
+    }, [hasMore, loading, loadingMore, cursor]);
 
     const checkAuth = async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -44,21 +79,67 @@ export default function ProductsPage() {
         }
     };
 
-    const loadProducts = async () => {
+    async function loadProducts(cursorValue: string | null, isInitial: boolean) {
+        if (isInitial) {
+            setLoading(true);
+        } else {
+            setLoadingMore(true);
+        }
+
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from("products")
                 .select("*")
-                .order("created_at", { ascending: false });
+                .order("created_at", { ascending: false })
+                .limit(PRODUCTS_PER_PAGE);
 
-            if (error) throw error;
-            setProducts(data || []);
+            if (searchQuery) {
+                query = query.or(
+                    `Name.ilike.%${searchQuery}%,item_number.ilike.%${searchQuery}%`
+                );
+            }
+
+            if (filterActive === "active") {
+                query = query.eq("is_active", true);
+            }
+
+            if (filterActive === "inactive") {
+                query = query.eq("is_active", false);
+            }
+
+            if (cursorValue) {
+                query = query.lt("created_at", cursorValue);
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Error fetching products:", error);
+            } else {
+                if (isInitial) {
+                    setProducts(data || []);
+                } else {
+                    setProducts((prev) => [...prev, ...(data || [])]);
+                }
+
+                if (data && data.length > 0) {
+                    setCursor(data[data.length - 1].created_at);
+                }
+
+                if (!data || data.length < PRODUCTS_PER_PAGE) {
+                    setHasMore(false);
+                }
+            }
         } catch (err) {
-            console.error("Failed to load products:", err);
+            console.error("Fetch error:", err);
         } finally {
-            setLoading(false);
+            if (isInitial) {
+                setLoading(false);
+            } else {
+                setLoadingMore(false);
+            }
         }
-    };
+    }
 
     const toggleProductStatus = async (id: number, currentStatus: boolean) => {
         try {
@@ -68,12 +149,13 @@ export default function ProductsPage() {
                 .eq("id", id);
 
             if (error) throw error;
-            loadProducts();
+            loadProducts(cursor, false);
         } catch (err) {
             console.error("Failed to update product status:", err);
         }
     };
 
+    // Perform a full reload after delete
     const performDelete = async () => {
         console.log("Starting performDelete with status:", deleteModal);
 
@@ -102,7 +184,6 @@ export default function ProductsPage() {
             }
 
             // 2. Delete product from database
-            // We use both name and id just in case there's an RLS issue or id mismatch
             console.log("Executing DB delete for ID:", deleteModal.productId);
             const { error: dbError, data: deletedData } = await supabase
                 .from("products")
@@ -119,15 +200,17 @@ export default function ProductsPage() {
 
             if (!deletedData || deletedData.length === 0) {
                 console.warn("Delete call returned success but 0 rows were removed. Checking column names...");
-                // Potential fallback or error message
                 throw new Error("Product not found in database. It may have already been deleted or there is an ID mismatch.");
             }
 
             // 3. Reset modal state immediately
             setDeleteModal({ isOpen: false, productId: null, imageUrls: [], productName: "" });
 
-            // 4. Await data refresh
-            await loadProducts();
+            // 4. Perform a full reload
+            setProducts([]);
+            setCursor(null);
+            setHasMore(true);
+            await loadProducts(null, true);
 
         } catch (err: any) {
             console.error("Critical delete failure:", err);
@@ -137,18 +220,21 @@ export default function ProductsPage() {
         }
     };
 
-    const filteredProducts = products.filter((product) => {
-        const matchesSearch =
-            product.Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.item_number.toString().includes(searchQuery);
+    // Trigger server fetch on search change
+    useEffect(() => {
+        setProducts([]);
+        setCursor(null);
+        setHasMore(true);
+        loadProducts(null, true);
+    }, [searchQuery]);
 
-        const matchesFilter =
-            filterActive === "all" ||
-            (filterActive === "active" && product.item_number > 0) ||
-            (filterActive === "inactive" && product.item_number <= 0);
-
-        return matchesSearch && matchesFilter;
-    });
+    // Trigger server fetch on filter change
+    useEffect(() => {
+        setProducts([]);
+        setCursor(null);
+        setHasMore(true);
+        loadProducts(null, true);
+    }, [filterActive]);
 
     if (loading && products.length === 0) {
         return (
@@ -281,7 +367,7 @@ export default function ProductsPage() {
                     </div>
 
                     {/* Products Grid */}
-                    {filteredProducts.length === 0 ? (
+                    {products.length === 0 ? (
                         <div className="bg-white rounded-3xl shadow-sm border border-stone-200 p-20 text-center">
                             <div className="w-24 h-24 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <svg className="w-12 h-12 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,111 +378,130 @@ export default function ProductsPage() {
                             <p className="text-stone-500 mt-2">Try adjusting your filters or search terms.</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                            {filteredProducts.map((product) => (
-                                <div
-                                    key={product.id}
-                                    className="group bg-white rounded-3xl shadow-sm hover:shadow-2xl hover:shadow-amber-100 border border-stone-200 overflow-hidden transition-all duration-300 transform hover:-translate-y-1"
-                                >
-                                    {/* Image Container */}
-                                    <div className="relative h-64 bg-stone-100 overflow-hidden">
-                                        {product.image_urls && product.image_urls[0] ? (
-                                            <img
-                                                src={product.image_urls[0]}
-                                                alt={product.Name}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <svg className="w-16 h-16 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                            </div>
-                                        )}
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                {products.map((product) => (
+                                    <div
+                                        key={product.id}
+                                        className="group bg-white rounded-3xl shadow-sm hover:shadow-2xl hover:shadow-amber-100 border border-stone-200 overflow-hidden transition-all duration-300 transform hover:-translate-y-1"
+                                    >
+                                        {/* Image Container */}
+                                        <div className="relative h-64 bg-stone-100 overflow-hidden">
+                                            {product.image_urls && product.image_urls[0] ? (
+                                                <img
+                                                    src={product.image_urls[0]}
+                                                    alt={product.Name}
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <svg className="w-16 h-16 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                </div>
+                                            )}
 
-                                        {/* Status Tag */}
-                                        <div className="absolute top-4 right-4">
-                                            <div className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-md border ${product.item_number > 0
-                                                ? "bg-green-500/90 text-white border-green-400"
-                                                : "bg-red-500/90 text-white border-red-400"
-                                                }`}>
-                                                {product.item_number > 0 ? "IN STOCK" : "OUT OF STOCK"}
+                                            {/* Status Tag */}
+                                            <div className="absolute top-4 right-4">
+                                                <div className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-md border ${product.is_active
+                                                    ? "bg-green-500/90 text-white border-green-400"
+                                                    : "bg-red-500/90 text-white border-red-400"
+                                                    }`}>
+                                                    {product.is_active ? "IN STOCK" : "OUT OF STOCK"}
+                                                </div>
+                                            </div>
+
+                                            {/* Quick Overlay Action */}
+                                            <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <Link
+                                                    href={`/Admin/products/edit/${product.id}`}
+                                                    className="bg-white text-stone-900 px-6 py-2 rounded-full font-bold shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300"
+                                                >
+                                                    Edit Product
+                                                </Link>
                                             </div>
                                         </div>
 
-                                        {/* Quick Overlay Action */}
-                                        <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <Link
-                                                href={`/Admin/products/edit/${product.id}`}
-                                                className="bg-white text-stone-900 px-6 py-2 rounded-full font-bold shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300"
-                                            >
-                                                Edit Product
-                                            </Link>
-                                        </div>
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="p-6">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className="flex-1">
-                                                <h3 className="font-bold text-xl text-stone-900 truncate pr-2">
-                                                    {product.Name}
-                                                </h3>
-                                                <div className="flex items-center mt-1 space-x-2">
-                                                    <span className="text-[10px] font-bold px-2 py-0.5 bg-stone-100 text-stone-500 rounded uppercase tracking-wider">
-                                                        Qty: {product.item_number}
-                                                    </span>
-                                                    {product.discount && (
-                                                        <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-600 rounded uppercase tracking-wider">
-                                                            Discount Active
+                                        {/* Content */}
+                                        <div className="p-6">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex-1">
+                                                    <h3 className="font-bold text-xl text-stone-900 truncate pr-2">
+                                                        {product.Name}
+                                                    </h3>
+                                                    <div className="flex items-center mt-1 space-x-2">
+                                                        <span className="text-[10px] font-bold px-2 py-0.5 bg-stone-100 text-stone-500 rounded uppercase tracking-wider">
+                                                            Qty: {product.item_number}
                                                         </span>
+                                                        {product.discount && (
+                                                            <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-600 rounded uppercase tracking-wider">
+                                                                Discount Active
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-2xl font-black text-amber-900">
+                                                        ${product.discount && product.discount_price ? product.discount_price : product.real_price}
+                                                    </div>
+                                                    {product.discount && (
+                                                        <div className="text-xs text-stone-400 line-through font-bold">
+                                                            ${product.real_price}
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="text-right">
-                                                <div className="text-2xl font-black text-amber-900">
-                                                    ${product.discount && product.discount_price ? product.discount_price : product.real_price}
+
+                                            <div className="pt-6 border-t border-stone-100 flex items-center justify-between">
+                                                <div className="flex -space-x-1">
+                                                    {product.sizes_available?.slice(0, 3).map(s => (
+                                                        <div key={s} className="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-600">
+                                                            {s}
+                                                        </div>
+                                                    ))}
+                                                    {product.sizes_available?.length > 3 && (
+                                                        <div className="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-400">
+                                                            +{product.sizes_available.length - 3}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                {product.discount && (
-                                                    <div className="text-xs text-stone-400 line-through font-bold">
-                                                        ${product.real_price}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
 
-                                        <div className="pt-6 border-t border-stone-100 flex items-center justify-between">
-                                            <div className="flex -space-x-1">
-                                                {product.sizes_available?.slice(0, 3).map(s => (
-                                                    <div key={s} className="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-600">
-                                                        {s}
-                                                    </div>
-                                                ))}
-                                                {product.sizes_available?.length > 3 && (
-                                                    <div className="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-400">
-                                                        +{product.sizes_available.length - 3}
-                                                    </div>
-                                                )}
+                                                <button
+                                                    onClick={() => setDeleteModal({
+                                                        isOpen: true,
+                                                        productId: product.id,
+                                                        imageUrls: product.image_urls,
+                                                        productName: product.Name
+                                                    })}
+                                                    className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all group/del"
+                                                >
+                                                    <svg className="w-6 h-6 transform group-hover/del:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
                                             </div>
-
-                                            <button
-                                                onClick={() => setDeleteModal({
-                                                    isOpen: true,
-                                                    productId: product.id,
-                                                    imageUrls: product.image_urls,
-                                                    productName: product.Name
-                                                })}
-                                                className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all group/del"
-                                            >
-                                                <svg className="w-6 h-6 transform group-hover/del:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
                                         </div>
                                     </div>
+                                ))}
+                            </div>
+
+                            {loadingMore && (
+                                <div className="flex items-center justify-center py-4">
+                                    <svg className="animate-spin h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
                                 </div>
-                            ))}
-                        </div>
+                            )}
+
+                            <div ref={observerTarget} className="h-10" />
+
+                            {!hasMore && products.length > 0 && (
+                                <div className="text-center py-12">
+                                    <p className="text-stone-500 font-medium">You've reached the end of the product list</p>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </main>

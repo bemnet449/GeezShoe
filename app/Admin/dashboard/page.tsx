@@ -34,7 +34,7 @@ const AdminDashboard = () => {
         try {
             // Fetch Orders count
             const { data: orders, error: ordersError } = await supabase
-                .from('Order')
+                .from('order')
                 .select('id');
 
             // Fetch Products for count and out of stock check

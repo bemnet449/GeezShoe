@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
@@ -18,29 +18,43 @@ interface Product {
     is_active: boolean;
 }
 
-const PRODUCTS_PER_PAGE = 4;
+const PRODUCTS_PER_PAGE = 4; // Number of products per page
 
 export default function ShopPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-    const [page, setPage] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState(""); // Debounced search query
     const [showOnlyDiscounts, setShowOnlyDiscounts] = useState(false);
     const observerTarget = useRef<HTMLDivElement>(null);
+    const isResettingRef = useRef(false); // Ref to block observer during reset
+    const pageRef = useRef(0); // Single source of truth for pagination
+
+    // Debounce search query
+    useEffect(() => {
+        const t = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+        return () => clearTimeout(t);
+    }, [searchQuery]);
 
     // Load initial products
     useEffect(() => {
         loadProducts(0, true);
-    }, []);
+    }, [debouncedSearch, showOnlyDiscounts]);
 
     // Setup intersection observer for infinite scroll
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
-                if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
-                    loadProducts(page + 1, false);
+                if (
+                    entries[0].isIntersecting &&
+                    hasMore &&
+                    !loading &&
+                    !loadingMore &&
+                    !isResettingRef.current // Block observer during reset
+                ) {
+                    loadProducts(pageRef.current + 1, false);
                 }
             },
             { threshold: 0.1 }
@@ -55,11 +69,14 @@ export default function ShopPage() {
                 observer.unobserve(observerTarget.current);
             }
         };
-    }, [hasMore, loading, loadingMore, page]);
+    }, [hasMore, loading, loadingMore]);
 
     async function loadProducts(pageNum: number, isInitial: boolean) {
         if (isInitial) {
             setLoading(true);
+            setProducts([]); // Clear products on new search
+            setHasMore(true); // Reset hasMore for new search
+            isResettingRef.current = true; // Block observer during reset
         } else {
             setLoadingMore(true);
         }
@@ -68,24 +85,38 @@ export default function ShopPage() {
             const start = pageNum * PRODUCTS_PER_PAGE;
             const end = start + PRODUCTS_PER_PAGE - 1;
 
-            const { data, error } = await supabase
+            let query = supabase
                 .from("products")
                 .select("id, Name, description, real_price, fake_price, discount, discount_price, image_urls, is_active")
-                .order("created_at", { ascending: false })
-                .range(start, end);
+                .order("created_at", { ascending: false });
+
+            // Apply search filter
+            if (debouncedSearch.trim()) {
+                query = query.or(
+                    `Name.ilike.%${debouncedSearch}%,description.ilike.%${debouncedSearch}%`
+                );
+            }
+
+            // Apply discount filter
+            if (showOnlyDiscounts) {
+                query = query.eq("discount", true);
+            }
+
+            // Apply pagination
+            query = query.range(start, end);
+
+            const { data, error } = await query;
 
             if (error) {
                 console.error("Error fetching products:", error);
             } else {
-                console.log("Fetched products:", data);
-
                 if (isInitial) {
+                    pageRef.current = 0; // Reset pageRef on new search
                     setProducts(data || []);
                 } else {
-                    setProducts(prev => [...prev, ...(data || [])]);
+                    pageRef.current += 1; // Increment pageRef on successful load
+                    setProducts((prev) => [...prev, ...(data || [])]);
                 }
-
-                setPage(pageNum);
 
                 // Check if there are more products
                 if (!data || data.length < PRODUCTS_PER_PAGE) {
@@ -97,20 +128,12 @@ export default function ShopPage() {
         } finally {
             if (isInitial) {
                 setLoading(false);
+                isResettingRef.current = false; // Release observer block
             } else {
                 setLoadingMore(false);
             }
         }
     }
-
-    const filteredProducts = useMemo(() => {
-        return products.filter((product) => {
-            const matchesSearch = (product.Name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (product.description || "").toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesDiscount = showOnlyDiscounts ? product.discount : true;
-            return matchesSearch && matchesDiscount;
-        });
-    }, [products, searchQuery, showOnlyDiscounts]);
 
     // Skeleton card component
     const SkeletonCard = () => (
@@ -173,7 +196,7 @@ export default function ShopPage() {
                             <SkeletonCard key={i} />
                         ))}
                     </div>
-                ) : filteredProducts.length === 0 ? (
+                ) : products.length === 0 ? (
                     <div className="text-center py-24 border-2 border-dashed border-stone-200 rounded-[3rem] bg-white/50">
                         <h2 className="text-2xl font-bold text-stone-400 mb-2">No products found.</h2>
                         <p className="text-stone-500 mb-6">Try adjusting your search or filters.</p>
@@ -190,7 +213,7 @@ export default function ShopPage() {
                 ) : (
                     <>
                         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-12">
-                            {filteredProducts.map((product) => (
+                            {products.map((product) => (
                                 <Link
                                     key={product.id}
                                     href={`/clients/product/${product.id}`}
