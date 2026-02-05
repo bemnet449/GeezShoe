@@ -86,33 +86,40 @@ export default function OrderDetailsPage() {
 
         setActionLoading(true);
         try {
-            /* 1. Add records to SALES table - Combine duplicate products */
-            // Group products by ID and sum quantities
-            const productMap = new Map<string, { product_id: string; product_name: string; quantity_sold: number }>();
+          for (let i = 0; i < order.product_ids.length; i++) {
+  const product_id = Number(order.product_ids[i]);
+  const product_name = order.product_names[i];
+  const quantity = Number(order.quantities[i] ?? 1);
 
-            order.product_ids.forEach((productId, index) => {
-                if (productMap.has(productId)) {
-                    // Product already exists, add to quantity
-                    const existing = productMap.get(productId)!;
-                    existing.quantity_sold += (order.quantities[index] || 1);
-                } else {
-                    // New product, add to map
-                    productMap.set(productId, {
-                        product_id: productId,
-                        product_name: order.product_names[index],
-                        quantity_sold: order.quantities[index] || 1,
-                    });
-                }
-            });
+  // Fetch current quantity_sold (if exists)
+  const { data: existingSale, error: fetchError } = await supabase
+    .from("sales")
+    .select("quantity_sold")
+    .eq("product_id", product_id)
+    .maybeSingle();
 
-            // Convert map to array for insertion
-            const salesData = Array.from(productMap.values());
+  if (fetchError) throw fetchError;
 
-            const { error: salesError } = await supabase
-                .from("sales")
-                .insert(salesData);
+  const newQuantity =
+    (existingSale?.quantity_sold || 0) + quantity;
 
-            if (salesError) throw salesError;
+  // Atomic upsert
+  const { error: upsertError } = await supabase
+    .from("sales")
+    .upsert(
+      {
+        product_id,
+        product_name,
+        quantity_sold: newQuantity,
+      },
+      {
+        onConflict: "product_id", // must match UNIQUE constraint
+      }
+    );
+
+  if (upsertError) throw upsertError;
+}
+
 
             /* 2. Upsert CUSTOMER record */
 

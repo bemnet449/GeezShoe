@@ -55,9 +55,6 @@ export async function placeOrder(formData: OrderFormData): Promise<void> {
     if (!formData.name?.trim()) {
         throw new Error("Customer name is required");
     }
-    if (!formData.email?.trim()) {
-        throw new Error("Customer email is required");
-    }
     if (!formData.phone?.trim()) {
         throw new Error("Customer phone is required");
     }
@@ -65,11 +62,17 @@ export async function placeOrder(formData: OrderFormData): Promise<void> {
         throw new Error("Delivery location is required");
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-        throw new Error("Invalid email format");
+    // Removed email validation to make it optional
+    if (formData.email?.trim()) {
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            throw new Error("Invalid email format");
+        }
     }
+
+    // Sanitize email if provided
+    const sanitizedEmail = formData.email?.trim().toLowerCase() || null;
 
     // 3. Transform cart items into arrays matching Supabase schema
     const product_ids = cart.map((item) => String(item.id));
@@ -80,13 +83,10 @@ export async function placeOrder(formData: OrderFormData): Promise<void> {
     const total_prices = cart.map((item) => item.price * item.qty);
     const order_is_preorder = cart.some(item => item.is_preorder);
 
-    // Sanitize email
-    const sanitizedEmail = formData.email.trim().toLowerCase();
-
     // 4. Insert order into Supabase
     const { error } = await supabase.from("order").insert({
         customer_name: formData.name.trim(),
-        customer_email: sanitizedEmail,
+        customer_email: sanitizedEmail, // Allow null for optional email
         customer_Phone: formData.phone.trim(),
         order_description: formData.description?.trim() || "",
         order_date: new Date().toISOString(),
