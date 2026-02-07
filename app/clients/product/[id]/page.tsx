@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import ShopNavbar from "@/components/ShopNavbar";
@@ -79,13 +78,12 @@ export default function ProductDetailPage() {
                                 </svg>
                             </button>
                             <div className="relative w-full max-w-5xl aspect-square mx-6">
-                                <Image
+                                <img
                                     src={product.image_urls[activeImage]}
                                     alt={product.Name}
-                                    fill
-                                    sizes="(max-width: 1280px) 100vw, 1280px"
-                                    className="object-contain"
-                                    priority
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="w-full h-full object-contain"
                                 />
                                 <button
                                     className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-stone-900 p-2 rounded-full"
@@ -122,13 +120,12 @@ export default function ProductDetailPage() {
                                     onClick={() => setIsModalOpen(true)}
                                 >
                                     {product.image_urls?.[activeImage] ? (
-                                        <Image
+                                        <img
                                             src={product.image_urls[activeImage]}
                                             alt={product.Name}
-                                            fill
-                                            sizes="(max-width: 1024px) 100vw, 50vw"
-                                            className="object-cover animate-in fade-in zoom-in-95 duration-500 group-hover:scale-105 transition-transform duration-700"
-                                            priority
+                                            loading="lazy"
+                                            decoding="async"
+                                            className="w-full h-full object-cover animate-in fade-in zoom-in-95 duration-500 group-hover:scale-105 transition-transform duration-700"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-stone-300">
@@ -152,7 +149,13 @@ export default function ProductDetailPage() {
                                             className={`relative aspect-square rounded-xl md:rounded-2xl overflow-hidden border-2 transition-all duration-300 ${activeImage === index ? "border-amber-600 scale-95 shadow-lg" : "border-transparent opacity-60 hover:opacity-100 hover:border-amber-200"
                                                 }`}
                                         >
-                                            <Image src={url} alt={`${product.Name} ${index}`} fill sizes="(max-width: 768px) 15vw, 10vw" className="object-cover" />
+                                            <img
+                                                src={url}
+                                                alt={`${product.Name} ${index}`}
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="w-full h-full object-cover"
+                                            />
                                         </button>
                                     ))}
                                 </div>

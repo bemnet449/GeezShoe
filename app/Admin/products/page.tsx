@@ -155,66 +155,57 @@ export default function ProductsPage() {
         }
     };
 
-    // Perform a full reload after delete
     const performDelete = async () => {
-        console.log("Starting performDelete with status:", deleteModal);
-
-        if (!deleteModal.productId) {
-            console.error("No productId found in deleteModal!");
-            return;
-        }
+        if (!deleteModal.productId) return;
 
         setLoading(true);
+
         try {
-            // 1. Delete images from storage first (best effort)
+            // 1. Delete images from storage
             if (deleteModal.imageUrls && deleteModal.imageUrls.length > 0) {
-                console.log("Cleaning up images:", deleteModal.imageUrls);
                 for (const url of deleteModal.imageUrls) {
                     try {
-                        const urlParts = url.split("/product-images/");
-                        if (urlParts.length === 2) {
-                            const filePath = urlParts[1];
-                            const { error: sErr } = await supabase.storage.from("product-images").remove([filePath]);
-                            if (sErr) console.warn("Storage item skip (not found or error):", filePath);
+                        // Extract path after "public/" in URL
+                        const match = url.match(/storage\/v1\/object\/public\/product-images\/(.+)/);
+                        if (match && match[1]) {
+                            const filePath = match[1];
+                            const { error: storageError } = await supabase.storage
+                                .from("product-images")
+                                .remove([filePath]);
+
+                            if (storageError) {
+                                console.warn("Failed to delete image:", filePath, storageError.message);
+                            } else {
+                                console.log("Deleted image:", filePath);
+                            }
+                        } else {
+                            console.warn("Could not parse file path from URL:", url);
                         }
                     } catch (err) {
-                        console.error("Image cleanup error:", err);
+                        console.error("Error deleting image:", url, err);
                     }
                 }
             }
 
             // 2. Delete product from database
-            console.log("Executing DB delete for ID:", deleteModal.productId);
             const { error: dbError, data: deletedData } = await supabase
                 .from("products")
                 .delete()
                 .eq("id", deleteModal.productId)
                 .select();
 
-            if (dbError) {
-                console.error("Supabase DB Delete Error:", dbError);
-                throw dbError;
-            }
+            if (dbError) throw dbError;
 
-            console.log("Supabase response - Data:", deletedData);
-
-            if (!deletedData || deletedData.length === 0) {
-                console.warn("Delete call returned success but 0 rows were removed. Checking column names...");
-                throw new Error("Product not found in database. It may have already been deleted or there is an ID mismatch.");
-            }
-
-            // 3. Reset modal state immediately
+            // 3. Reset modal and reload products
             setDeleteModal({ isOpen: false, productId: null, imageUrls: [], productName: "" });
-
-            // 4. Perform a full reload
             setProducts([]);
             setCursor(null);
             setHasMore(true);
             await loadProducts(null, true);
 
         } catch (err: any) {
-            console.error("Critical delete failure:", err);
-            alert("Delete failed: " + (err.message || "Unknown database error"));
+            console.error("Delete failed:", err);
+            alert("Delete failed: " + (err.message || "Unknown error"));
         } finally {
             setLoading(false);
         }

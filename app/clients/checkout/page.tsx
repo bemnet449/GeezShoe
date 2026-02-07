@@ -2,12 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import ShopNavbar from "@/components/ShopNavbar";
 import {
     placeOrder,
     getCart,
-    getCartTotal,
     removeFromCart,
     updateCartItemQuantity,
     type CartItem,
@@ -100,7 +98,7 @@ export default function CheckoutPage() {
         }
     };
 
-    const total = getCartTotal();
+    const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
     if (orderSuccess) {
         return (
@@ -155,7 +153,13 @@ export default function CheckoutPage() {
                                     >
                                         {item.image && (
                                             <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0">
-                                                <Image src={item.image} alt={item.name} fill sizes="96px" className="object-cover" />
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name}
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                    className="w-full h-full object-cover"
+                                                />
                                             </div>
                                         )}
                                         <div className="flex-1">

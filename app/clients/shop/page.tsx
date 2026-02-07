@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import ShopNavbar from "@/components/ShopNavbar";
@@ -213,7 +212,7 @@ export default function ShopPage() {
                 ) : (
                     <>
                         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-12">
-                            {products.map((product) => (
+                            {products.map((product, index) => (
                                 <Link
                                     key={product.id}
                                     href={`/clients/product/${product.id}`}
@@ -221,12 +220,12 @@ export default function ShopPage() {
                                 >
                                     <div className="relative aspect-square overflow-hidden bg-stone-200 group-hover:shadow-inner transition-all duration-500">
                                         {product.image_urls?.[0] ? (
-                                            <Image
+                                            <img
                                                 src={product.image_urls[0]}
                                                 alt={product.Name}
-                                                fill
-                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                                                className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-stone-400 bg-stone-100 uppercase text-[10px] font-bold tracking-widest">
