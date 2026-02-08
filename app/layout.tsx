@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: "GeezShoe | Premium Ethiopian Handcrafted Footwear",
   description: "Discover the finest handcrafted leather shoes from Ethiopia. Timeless craftsmanship meets modern style at GeezShoe.",
   keywords: ["shoes", "leather shoes", "ethiopian craftsmanship", "handcrafted footwear", "luxury shoes"],
+  icons: {
+    icon: "/Logofavicon.PNG",
+  },
 };
 
 export default function RootLayout({

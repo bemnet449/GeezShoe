@@ -122,7 +122,7 @@ export default function CheckoutPage() {
         <div className="min-h-screen bg-stone-50 text-stone-900 transition-colors duration-300">
             <ShopNavbar />
 
-            <div className="pt-32 pb-24 container mx-auto px-6">
+            <div className="pt-32 pb-24 container mx-auto px-4 sm:px-6 max-w-full overflow-x-hidden">
                 <h1 className="text-5xl font-black text-stone-900 mb-12 uppercase tracking-tight">Checkout</h1>
 
                 {cart.length === 0 ? (
@@ -149,73 +149,74 @@ export default function CheckoutPage() {
                                 {cart.map((item, index) => (
                                     <div
                                         key={`${item.id}-${item.size}-${index}`}
-                                        className="bg-white rounded-2xl p-6 shadow-lg border border-stone-100 flex gap-6 hover:shadow-xl transition-shadow duration-300"
+                                        className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg border border-stone-100 w-full max-w-full overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col sm:flex-row sm:gap-6 gap-4"
                                     >
-                                        {item.image && (
-                                            <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0">
-                                                <img
-                                                    src={item.image}
-                                                    alt={item.name}
-                                                    loading="lazy"
-                                                    decoding="async"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                        )}
-                                        <div className="flex-1">
-                                            {item.is_preorder && (
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <span className="bg-amber-100 text-amber-700 text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider border border-amber-200">
-                                                        Pre-Order
-                                                    </span>
+                                        <div className="flex gap-4 sm:gap-6 min-w-0 flex-1 sm:flex-initial">
+                                            {item.image && (
+                                                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0">
+                                                    <img
+                                                        src={item.image}
+                                                        alt={item.name}
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        className="w-full h-full object-cover"
+                                                    />
                                                 </div>
                                             )}
-                                            <h3 className="font-bold text-stone-900 text-lg mb-1 uppercase tracking-tight leading-tight">{item.name}</h3>
-                                            {item.size && (
-                                                <p className="text-sm text-stone-500 mb-2 font-medium">Size: EU {item.size}</p>
-                                            )}
-                                            <div className="flex items-center gap-3">
-                                                <p className="text-amber-600 font-black text-xl">${(item.price * item.qty).toFixed(2)}</p>
-                                                {item.is_preorder && item.original_price && (
-                                                    <p className="text-stone-400 text-sm line-through font-bold">${(item.original_price * item.qty).toFixed(2)}</p>
+                                            <div className="flex-1 min-w-0">
+                                                {item.is_preorder && (
+                                                    <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                                                        <span className="bg-amber-100 text-amber-700 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 rounded-full uppercase tracking-wider border border-amber-200">
+                                                            Pre-Order
+                                                        </span>
+                                                    </div>
                                                 )}
-                                            </div>
-                                            <div className="mt-2 text-[10px] font-black uppercase tracking-widest text-stone-400">
-                                                Qty: {item.qty} × ${item.price.toFixed(2)}
+                                                <h3 className="font-bold text-stone-900 text-base sm:text-lg mb-1 uppercase tracking-tight leading-tight break-words">{item.name}</h3>
+                                                {item.size && (
+                                                    <p className="text-xs sm:text-sm text-stone-500 mb-1 sm:mb-2 font-medium">Size: EU {item.size}</p>
+                                                )}
+                                                <div className="flex flex-wrap items-baseline gap-2">
+                                                    <p className="text-amber-600 font-black text-lg sm:text-xl">${(item.price * item.qty).toFixed(2)}</p>
+                                                    {item.is_preorder && item.original_price && (
+                                                        <p className="text-stone-400 text-xs sm:text-sm line-through font-bold">${(item.original_price * item.qty).toFixed(2)}</p>
+                                                    )}
+                                                </div>
+                                                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-stone-400 mt-1">Qty: {item.qty} × ${item.price.toFixed(2)}</p>
                                             </div>
                                         </div>
-                                        <div className="flex flex-col items-end justify-between">
-                                            <button
-                                                onClick={() => handleRemoveItem(item.id, item.size)}
-                                                className="text-stone-300 hover:text-red-600 transition-colors p-1"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                            <div className="flex items-center border-2 border-stone-100 rounded-xl overflow-hidden bg-stone-50">
+                                        <div className="flex flex-row sm:flex-col items-center justify-between sm:items-end sm:justify-between border-t border-stone-100 pt-3 sm:pt-0 sm:border-t-0 gap-3">
+                                            <div className="flex items-center border-2 border-stone-100 rounded-xl overflow-hidden bg-stone-50 order-1 sm:order-2">
                                                 <button
                                                     onClick={() => handleUpdateQuantity(item.id, item.qty - 1, item.size)}
-                                                    className="w-8 h-8 flex items-center justify-center hover:bg-white transition-colors text-stone-400 hover:text-stone-900"
+                                                    className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-white transition-colors text-stone-400 hover:text-stone-900"
                                                 >
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-4 h-4 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                                                     </svg>
                                                 </button>
-                                                <span className="w-10 h-8 flex items-center justify-center font-bold text-sm">
+                                                <span className="w-9 sm:w-10 h-9 sm:h-8 flex items-center justify-center font-bold text-sm min-w-[2.25rem] sm:min-w-[2.5rem]">
                                                     {item.qty}
                                                 </span>
                                                 <button
                                                     onClick={() => handleUpdateQuantity(item.id, item.qty + 1, item.size)}
                                                     disabled={item.qty >= 15}
-                                                    className={`w-8 h-8 flex items-center justify-center transition-colors ${item.qty >= 15 ? "text-stone-200 cursor-not-allowed" : "text-stone-400 hover:text-stone-900 hover:bg-white"}`}
+                                                    className={`w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center transition-colors ${item.qty >= 15 ? "text-stone-200 cursor-not-allowed" : "text-stone-400 hover:text-stone-900 hover:bg-white"}`}
                                                 >
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-4 h-4 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                                     </svg>
                                                 </button>
                                             </div>
-                                            <p className="text-stone-900 font-black text-[10px] uppercase tracking-widest mt-2">{item.is_preorder ? 'Pre-Order Total' : 'Item Total'}</p>
+                                            <button
+                                                onClick={() => handleRemoveItem(item.id, item.size)}
+                                                className="text-stone-300 hover:text-red-600 transition-colors p-1.5 touch-manipulation order-2 sm:order-1"
+                                                aria-label="Remove item"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                            <p className="text-stone-900 font-black text-[10px] uppercase tracking-widest hidden sm:block order-3">{item.is_preorder ? 'Pre-Order Total' : 'Item Total'}</p>
                                         </div>
                                     </div>
                                 ))}

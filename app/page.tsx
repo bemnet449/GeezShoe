@@ -47,7 +47,7 @@ export default async function Home() {
             alt="Premium Geez Shoes"
             fill
             sizes="100vw"
-            className="object-cover brightness-50 animate-ken-burns blur-[5px]"
+            className="object-cover brightness-50 animate-ken-burns blur-[2px] sm:blur-[5px]"
             priority
           />
         </div>
@@ -66,10 +66,10 @@ export default async function Home() {
         </div>
 
         {/* Main Brand Content - Centered */}
-        <div className="container mx-auto px-6 relative z-10 flex flex-col items-center justify-center text-center -mt-12 md:-mt-24">
+        <div className="container mx-auto px-6 relative z-10 flex flex-col items-center justify-center text-center -mt-24 sm:-mt-12 md:-mt-24">
           {/* Phase 1: Logo Reveal (Starts 0s, ends 2.5s) */}
           <div className="opacity-0 animate-dramatic-reveal mb-4 md:mb-2 flex flex-col items-center w-full px-1 md:px-4">
-            <div className="relative w-full max-w-[550px] h-[180px] sm:max-w-[900px] sm:h-[280px] md:max-w-[1200px] md:h-[380px] lg:max-w-[1500px] lg:h-[480px] mb-0 transition-all duration-500">
+            <div className="relative w-full max-w-[90vw] h-[240px] sm:max-w-[900px] sm:h-[280px] md:max-w-[1200px] md:h-[380px] lg:max-w-[1500px] lg:h-[480px] mb-0 transition-all duration-500">
               <Image
                 src="/LogoBrown.PNG"
                 alt="Geez Shoe Logo"

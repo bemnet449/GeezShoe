@@ -360,11 +360,11 @@ export default function ShopPage() {
                                     </div>
 
                                     <div className="p-3 md:p-5 flex flex-col flex-1">
-                                        <div className="flex flex-col md:flex-row justify-between items-start mb-3 md:mb-4 gap-1 md:gap-4">
-                                            <h3 className="text-sm md:text-xl font-black text-stone-900 group-hover:text-amber-600 transition-colors line-clamp-1 uppercase tracking-tight leading-tight">
+                                        <div className="flex flex-col mb-3 md:mb-4">
+                                            <h3 className="text-sm md:text-xl font-black text-stone-900 group-hover:text-amber-600 transition-colors uppercase tracking-tight leading-tight break-words">
                                                 {product.Name}
                                             </h3>
-                                            <div className="flex flex-wrap items-baseline gap-2">
+                                            <div className="flex flex-wrap items-baseline gap-2 mt-1">
                                                 {/* Crossed-out: original price when discounted, or fake/MSRP when fake_price exists */}
                                                 {(product.discount && product.discount_price != null) && (
                                                     <span className="text-[10px] md:text-sm text-stone-400 line-through font-bold">
