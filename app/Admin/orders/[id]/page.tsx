@@ -25,13 +25,9 @@ interface order {
     coupon_code: string | null;
 }
 
-interface ProductImage {
-    productId: string;
-    imageUrl: string | null;
-}
-
 export default function OrderDetailsPage() {
-    const { id } = useParams();
+    const params = useParams();
+    const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
     const router = useRouter();
     const [order, setOrder] = useState<order | null>(null);
     const [loading, setLoading] = useState(true);
@@ -91,7 +87,7 @@ export default function OrderDetailsPage() {
             } else if (typeof product.image_urls === "string") {
                 try {
                     urls = JSON.parse(product.image_urls);
-                } catch (err) {
+                } catch {
                     console.warn("⚠️ Failed to parse image_urls for product:", product.id);
                 }
             }
@@ -276,7 +272,7 @@ if (customerError) throw customerError;
 
     // Grouping items by product name while keeping size-specific data
     const groupedItems = () => {
-        const grouped: Record<string, any[]> = {};
+        const grouped: Record<string, { index: number; size: string; qty: number; unitPrice: number; totalPrice: number }[]> = {};
         order.product_names.forEach((name, i) => {
             if (!grouped[name]) grouped[name] = [];
             grouped[name].push({

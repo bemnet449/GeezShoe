@@ -1,13 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
+interface Customer {
+    id?: number;
+    name: string;
+    email: string;
+    phone: string;
+    total_items_purchased: number;
+}
+
 export default function CustomersPage() {
-    const [customers, setCustomers] = useState<any[]>([]);
+    const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+
+    const fetchCustomers = useCallback(async () => {
+        const { data, error } = await supabase
+            .from("customers")
+            .select("*")
+            .order("total_items_purchased", { ascending: false });
+
+        if (!error) setCustomers(data || []);
+        setLoading(false);
+    }, []);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -21,17 +39,7 @@ export default function CustomersPage() {
 
         checkAuth();
         fetchCustomers();
-    }, []);
-
-    async function fetchCustomers() {
-        const { data, error } = await supabase
-            .from("customers")
-            .select("*")
-            .order("total_items_purchased", { ascending: false });
-
-        if (!error) setCustomers(data || []);
-        setLoading(false);
-    }
+    }, [fetchCustomers, router]);
 
     if (loading)
         return (
@@ -61,7 +69,7 @@ export default function CustomersPage() {
                     <tbody>
                         {customers.map((c, index) => (
                             <tr
-                                key={c.id}
+                                key={c.phone ?? index}
                                 className={`border-t ${
                                     index < 10
                                         ? "bg-amber-50 hover:bg-amber-100"

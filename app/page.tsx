@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,11 +15,18 @@ function normalizePhoneForWhatsApp(phone: string | null | undefined): string {
 }
 
 export default async function Home() {
-  const { data: company } = await supabase
-    .from("company_info")
-    .select("email, phone_number, instagram, whatsapp, telegram")
-    .eq("id", COMPANY_INFO_ID)
-    .maybeSingle();
+  let company: { email?: string; phone_number?: string; instagram?: string; whatsapp?: string; telegram?: string } | null = null;
+
+  try {
+    const { data } = await supabase
+      .from("company_info")
+      .select("email, phone_number, instagram, whatsapp, telegram")
+      .eq("id", COMPANY_INFO_ID)
+      .maybeSingle();
+    company = data;
+  } catch (err) {
+    console.error("Failed to fetch company info:", err);
+  }
 
   const email = company?.email?.trim() || "hello@geezshoe.com";
   const phone = company?.phone_number?.trim() || "+251 911 00 00 00";
@@ -187,13 +195,13 @@ export default async function Home() {
             <div>
               <h2 className="text-[10px] md:text-sm uppercase font-bold tracking-[0.4em] text-amber-600 mb-4 md:mb-6">Get in touch</h2>
               <h3 className="text-4xl md:text-6xl font-black text-white mb-6 md:mb-10 tracking-tight leading-tight">
-                LET'S STEP <br className="hidden md:block" /> INTO THE <span className="text-amber-500/90 italic">EXCLUSIVE</span>
+                LET&apos;S STEP <br className="hidden md:block" /> INTO THE <span className="text-amber-500/90 italic">EXCLUSIVE</span>
               </h3>
               <p className="text-stone-400 text-base md:text-lg leading-relaxed max-w-md italic font-medium">
                 Direct paths to our artisans. Whether by message or call, we are here to guide your choice.
               </p>
               <div className="mt-8 pt-8 border-t border-stone-800">
-                <p className="text-stone-500 text-sm italic font-medium">Ge'ez Shoes — Handmade with purpose. Worn with pride.</p>
+                <p className="text-stone-500 text-sm italic font-medium">Ge&apos;ez Shoes — Handmade with purpose. Worn with pride.</p>
               </div>
             </div>
 

@@ -332,7 +332,7 @@ export default function ShopPage() {
                 ) : (
                     <>
                         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-12">
-                            {products.map((product, index) => (
+                            {products.map((product) => (
                                 <Link
                                     key={product.id}
                                     href={`/clients/product/${product.id}`}
@@ -410,7 +410,7 @@ export default function ShopPage() {
                         {/* End of products message */}
                         {!hasMore && products.length > 0 && (
                             <div className="text-center py-12">
-                                <p className="text-stone-400 font-medium text-sm">You've reached the end of our collection</p>
+                                <p className="text-stone-400 font-medium text-sm">You&apos;ve reached the end of our collection</p>
                             </div>
                         )}
                     </>

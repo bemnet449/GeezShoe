@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { compressImage } from "@/utils/compressImage";
 
@@ -19,7 +19,7 @@ export default function ProductImageUpload({
   onUploadComplete,
   onUploadingChange,
   existingUrls = [],
-  mode,
+  mode: _mode,
 }: ProductImageUploadProps) {
   const [slots, setSlots] = useState<(string | null)[]>([
     existingUrls[0] || null,
@@ -118,7 +118,7 @@ export default function ProductImageUpload({
       setSlots(newSlots);
       updateParent(newSlots);
 
-    } catch (err: any) {
+    } catch (err) {
       console.error("Upload failed:", err);
       newErrors[slotIndex] = "Upload failed. Try again.";
       setErrors(newErrors);

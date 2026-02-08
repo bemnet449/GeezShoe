@@ -21,7 +21,8 @@ interface Product {
 }
 
 export default function ProductDetailPage() {
-    const { id } = useParams();
+    const params = useParams();
+    const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
     const router = useRouter();
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);

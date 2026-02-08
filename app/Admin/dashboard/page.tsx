@@ -83,7 +83,7 @@ const AdminDashboard = () => {
                     Welcome back, <span className="text-amber-600 capitalize">{userName}</span>.
                 </h1>
                 <p className="text-stone-500 font-medium text-base md:text-lg">
-                    Here is what's happening with GEEZ SHOE today.
+                    Here is what&apos;s happening with GEEZ SHOE today.
                 </p>
             </header>
 

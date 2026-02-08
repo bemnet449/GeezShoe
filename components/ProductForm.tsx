@@ -58,7 +58,7 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
     const [loading, setLoading] = useState(false);
     const [submitError, setSubmitError] = useState("");
     const [submitSuccess, setSubmitSuccess] = useState(false);
-    const [isImageUploading, setIsImageUploading] = useState(false);
+    const [, setIsImageUploading] = useState(false);
 
     // ─────────────────────────────────────────────────────────────────────────────
     //  VALIDATION LOGIC (Declarative & Real-time)
@@ -68,10 +68,10 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
     const validationErrors = useMemo(() => {
         const errors: Partial<Record<keyof ProductData, string>> = {};
 
-        const isEmpty = (val: any) =>
+        const isEmpty = (val: unknown) =>
             val === null || val === undefined || String(val).trim() === "";
 
-        const num = (val: any) => Number(val);
+        const num = (val: unknown) => Number(val);
 
         if (isEmpty(formData.name)) errors.name = "Product name is required.";
         if (isEmpty(formData.description)) errors.description = "Product description is required.";
@@ -270,10 +270,10 @@ export default function ProductForm({ mode, productId, onSuccess }: ProductFormP
             setSubmitSuccess(true);
             setTimeout(() => onSuccess?.(), 1500);
 
-        } catch (err: any) {
+        } catch (err) {
             console.error("Submission failed fully:", err);
             // Show more detailed error message to UI
-            setSubmitError(err.message || "Something went wrong during database save.");
+            setSubmitError(err instanceof Error ? err.message : "Something went wrong during database save.");
         } finally {
             setLoading(false);
         }

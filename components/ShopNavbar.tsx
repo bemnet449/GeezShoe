@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { getCartItemCount } from "@/utils/placeOrder";
 
 export default function ShopNavbar() {
     const [scrolled, setScrolled] = useState(false);
@@ -26,7 +25,7 @@ export default function ShopNavbar() {
     useEffect(() => {
         const updateCartCount = () => {
             const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
-            const total = cartItems.reduce((sum: number, item: any) => sum + (item.qty || 1), 0);
+            const total = cartItems.reduce((sum: number, item: { qty?: number }) => sum + (item.qty || 1), 0);
             setCartCount(total);
         };
 

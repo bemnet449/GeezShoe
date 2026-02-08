@@ -9,17 +9,19 @@ export default function Navbar() {
     const pathname = usePathname();
 
     useEffect(() => {
-        setIsVisible(false);
-    }, [pathname]);
-
-    useEffect(() => {
         const handleScroll = () => {
             // Navbar appears only after scrolling down 100px
             setIsVisible(window.scrollY > 100);
         };
+        // Set initial state based on current scroll
+        handleScroll();
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    useEffect(() => {
+        setIsVisible(false);
+    }, [pathname]);
 
     const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
         if (href.startsWith("/#")) {

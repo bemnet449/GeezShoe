@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { showToast } from "@/components/Toast";
@@ -25,34 +25,7 @@ export default function SalesPage() {
     const [productInfo, setProductInfo] = useState<Record<string, ProductInfo>>({});
     const router = useRouter();
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                router.push("/Admin/Login");
-            }
-        };
-
-        checkAuth();
-        fetchSales();
-    }, []);
-
-    async function fetchSales() {
-        const { data, error } = await supabase
-            .from("sales")
-            .select("*")
-            .order("created_at", { ascending: false });
-
-        if (!error && data) {
-            setSales(data);
-            // Fetch product info for all unique product IDs
-            const uniqueProductIds = [...new Set(data.map(s => s.product_id))];
-            await fetchProductInfo(uniqueProductIds);
-        }
-        setLoading(false);
-    }
-
-    async function fetchProductInfo(productIds: string[]) {
+    const fetchProductInfo = useCallback(async (productIds: string[]) => {
         const infoMap: Record<string, ProductInfo> = {};
 
         for (const productId of productIds) {
@@ -78,7 +51,33 @@ export default function SalesPage() {
         }
 
         setProductInfo(infoMap);
-    }
+    }, []);
+
+    const fetchSales = useCallback(async () => {
+        const { data, error } = await supabase
+            .from("sales")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (!error && data) {
+            setSales(data);
+            const uniqueProductIds = [...new Set(data.map(s => s.product_id))];
+            await fetchProductInfo(uniqueProductIds);
+        }
+        setLoading(false);
+    }, [fetchProductInfo]);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                router.push("/Admin/Login");
+            }
+        };
+
+        checkAuth();
+        fetchSales();
+    }, [fetchSales, router]);
 
     function handleProductClick(sale: Sale) {
         const info = productInfo[sale.product_id];

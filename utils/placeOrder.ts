@@ -43,7 +43,7 @@ export async function placeOrder(formData: OrderFormData): Promise<void> {
     try {
         const parsed = JSON.parse(cartRaw);
         cart = Array.isArray(parsed) ? parsed : parsed.cart || [];
-    } catch (error) {
+    } catch {
         throw new Error("Invalid cart data");
     }
 
