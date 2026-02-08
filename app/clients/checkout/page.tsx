@@ -231,10 +231,11 @@ export default function CheckoutPage() {
                         </div>
 
                         {/* Customer Form Column */}
-                        <div className="bg-white p-8 rounded-2xl shadow-lg border border-stone-200">
-                            <h2 className="text-2xl font-black text-stone-900 mb-6 uppercase tracking-tight">
+                        <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl border border-stone-100 shadow-stone-200/50">
+                            <h2 className="text-2xl md:text-3xl font-black text-stone-900 mb-2 uppercase tracking-tight">
                                 Customer Information
                             </h2>
+                            <p className="text-sm text-stone-500 mb-6 font-medium">Enter your details for delivery</p>
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 {errors.general && (
                                     <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-red-700 text-sm font-bold">
@@ -243,102 +244,116 @@ export default function CheckoutPage() {
                                 )}
 
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-stone-700 mb-2">
+                                    <label className="block text-xs font-black uppercase tracking-widest text-stone-600 mb-2">
                                         Full Name *
                                     </label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${errors.name ? "border-red-300 bg-red-50 focus:ring-red-500/10" : "border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10"
-                                            } focus:outline-none font-bold text-stone-900 group shadow-sm hover:border-stone-300`}
-                                        placeholder="John Doe"
+                                        className={`w-full px-4 py-3.5 rounded-xl border-2 transition-all duration-200 ${errors.name ? "border-red-300 bg-red-50/50 focus:ring-red-500/10" : "border-stone-200 bg-stone-50/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 focus:bg-white"
+                                            } focus:outline-none font-medium text-stone-900 placeholder:text-stone-400`}
+                                        placeholder="e.g. Abebe Kebede"
                                     />
-                                    {errors.name && <p className="text-red-600 text-[10px] font-bold mt-1 uppercase tracking-tight">{errors.name}</p>}
+                                    {errors.name && <p className="text-red-600 text-[10px] font-bold mt-1.5">{errors.name}</p>}
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-stone-700 mb-2">
-                                        Email Address (Optional)
+                                    <label className="block text-xs font-black uppercase tracking-widest text-stone-600 mb-2">
+                                        Email Address <span className="font-normal text-stone-400">(Optional)</span>
                                     </label>
                                     <input
                                         type="email"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl border-2 border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10 focus:outline-none font-bold text-stone-900 shadow-sm hover:border-stone-300"
-                                        placeholder="john@example.com"
+                                        className="w-full px-4 py-3.5 rounded-xl border-2 border-stone-200 bg-stone-50/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 focus:outline-none focus:bg-white font-medium text-stone-900 placeholder:text-stone-400 transition-all duration-200"
+                                        placeholder="email@example.com"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-stone-700 mb-2">
+                                    <label className="block text-xs font-black uppercase tracking-widest text-stone-600 mb-2">
                                         Phone Number *
                                     </label>
                                     <input
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${errors.phone ? "border-red-300 bg-red-50 focus:ring-red-500/10" : "border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10"
-                                            } focus:outline-none font-bold text-stone-900 group shadow-sm hover:border-stone-300`}
-                                        placeholder="+251 912 345 678"
+                                        className={`w-full px-4 py-3.5 rounded-xl border-2 transition-all duration-200 ${errors.phone ? "border-red-300 bg-red-50/50 focus:ring-red-500/10" : "border-stone-200 bg-stone-50/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 focus:bg-white"
+                                            } focus:outline-none font-medium text-stone-900 placeholder:text-stone-400`}
+                                        placeholder="+251 9XX XXX XXX"
                                     />
-                                    {errors.phone && <p className="text-red-600 text-[10px] font-bold mt-1 uppercase tracking-tight">{errors.phone}</p>}
+                                    {errors.phone && <p className="text-red-600 text-[10px] font-bold mt-1.5">{errors.phone}</p>}
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-stone-700 mb-2">
-                                        Order Notes (Optional)
+                                    <label className="block text-xs font-black uppercase tracking-widest text-stone-600 mb-2">
+                                        Order Notes <span className="font-normal text-stone-400">(Optional)</span>
                                     </label>
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl border-2 border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10 focus:outline-none font-bold text-stone-900 shadow-sm hover:border-stone-300 resize-none transition-all"
+                                        className="w-full px-4 py-3.5 rounded-xl border-2 border-stone-200 bg-stone-50/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 focus:outline-none focus:bg-white font-medium text-stone-900 placeholder:text-stone-400 resize-none transition-all duration-200"
                                         rows={3}
-                                        placeholder="Any special requests or delivery instructions..."
+                                        placeholder="Special requests, landmarks, or delivery instructions..."
                                     />
                                 </div>
 
                                 {/* Delivery Section */}
-                                <div className="bg-amber-50 border-2 border-amber-100 rounded-2xl p-6 space-y-6">
-                                    <label className="flex items-start gap-4 cursor-pointer group">
-                                        <div className="relative flex items-center justify-center mt-0.5">
+                                <div className="bg-gradient-to-br from-amber-50/80 to-orange-50/50 border-2 border-amber-100 rounded-2xl p-6 space-y-6">
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-stone-800 mb-4 flex items-center gap-2">
+                                        <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Delivery Address
+                                    </h3>
+                                    <label className="flex items-start gap-4 cursor-pointer group select-none">
+                                        <div className="relative flex-shrink-0 mt-0.5">
                                             <input
                                                 type="checkbox"
                                                 checked={formData.isInAddis}
                                                 onChange={(e) => setFormData({ ...formData, isInAddis: e.target.checked })}
-                                                className="w-6 h-6 rounded-lg border-2 border-amber-600 text-amber-600 focus:ring-2 focus:ring-amber-600 focus:ring-offset-0 cursor-pointer accent-amber-600 transition-all duration-300"
+                                                className="peer sr-only"
                                             />
+                                            <div className={`w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300 group-hover:border-amber-500 ${formData.isInAddis ? 'bg-amber-600 border-amber-600' : 'bg-white border-amber-200'}`}>
+                                                {formData.isInAddis && (
+                                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="flex-1">
-                                            <span className="text-sm font-black text-amber-900 group-hover:text-amber-700 transition-colors uppercase tracking-widest leading-none">
+                                        <div className="flex-1 min-w-0">
+                                            <span className="text-sm font-black text-stone-900 group-hover:text-amber-700 transition-colors block">
                                                 Delivery within Addis Ababa
                                             </span>
-                                            <p className="text-[10px] text-amber-800/60 mt-1 font-bold uppercase tracking-tight">
-                                                {formData.isInAddis ? "✓ Fast local delivery within the city" : "✗ Shipping outside Addis may take longer"}
+                                            <p className="text-xs text-stone-600 mt-1 font-medium">
+                                                {formData.isInAddis ? "Fast local delivery within the city" : "Shipping outside Addis — may take longer"}
                                             </p>
                                         </div>
                                     </label>
 
                                     <div>
-                                        <label className="block text-xs font-black uppercase tracking-widest text-amber-900/60 mb-3">
-                                            Delivery Location / Area *
+                                        <label className="block text-xs font-black uppercase tracking-widest text-stone-700 mb-2">
+                                            Street, Subcity & Landmark *
                                         </label>
                                         <input
                                             type="text"
                                             value={formData.delivery_location}
                                             onChange={(e) => setFormData({ ...formData, delivery_location: e.target.value })}
-                                            className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${errors.delivery_location ? "border-red-300 bg-red-50 focus:ring-red-500/10" : "border-amber-100 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10"
-                                                } focus:outline-none font-bold text-stone-900 shadow-sm`}
-                                            placeholder="e.g. Bole, CMS, 22..."
+                                            className={`w-full px-4 py-3.5 rounded-xl border-2 transition-all duration-200 ${errors.delivery_location ? "border-red-300 bg-red-50/50 focus:ring-red-500/10" : "border-amber-100 bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10"
+                                                } focus:outline-none font-medium text-stone-900 placeholder:text-stone-400`}
+                                            placeholder="e.g. Bole Road, near Edna Mall, Building 22"
                                         />
-                                        {errors.delivery_location && <p className="text-red-600 text-[10px] font-bold mt-1 uppercase tracking-tight">{errors.delivery_location}</p>}
+                                        {errors.delivery_location && <p className="text-red-600 text-[10px] font-bold mt-1.5">{errors.delivery_location}</p>}
                                     </div>
                                 </div>
 
                                 {/* Coupon Section Last */}
-                                <div className="bg-stone-50 border-2 border-stone-200 rounded-2xl p-6 transition-all duration-300">
-                                    <label className="flex items-center gap-4 cursor-pointer group">
-                                        <div className="relative flex items-center justify-center">
+                                <div className="bg-stone-50/80 border-2 border-stone-200 rounded-2xl p-6 transition-all duration-300">
+                                    <label className="flex items-center gap-4 cursor-pointer group select-none">
+                                        <div className="relative flex-shrink-0">
                                             <input
                                                 type="checkbox"
                                                 checked={showCouponInput}
@@ -346,31 +361,32 @@ export default function CheckoutPage() {
                                                     setShowCouponInput(e.target.checked);
                                                     if (!e.target.checked) setFormData(prev => ({ ...prev, coupon_code: "" }));
                                                 }}
-                                                className="w-6 h-6 rounded-lg border-2 border-stone-300 text-amber-600 focus:ring-2 focus:ring-amber-600 focus:ring-offset-0 cursor-pointer accent-amber-600 transition-all duration-300"
+                                                className="peer sr-only"
                                             />
+                                            <div className={`w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300 ${showCouponInput ? 'bg-amber-600 border-amber-600' : 'bg-white border-stone-300 group-hover:border-stone-400'}`}>
+                                                {showCouponInput && (
+                                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="flex-1">
-                                            <span className="text-xs font-black text-stone-900 group-hover:text-amber-600 transition-colors uppercase tracking-widest leading-none">
-                                                I have a coupon code
-                                            </span>
-                                        </div>
+                                        <span className="text-sm font-black text-stone-900 group-hover:text-amber-600 transition-colors">
+                                            I have a coupon code
+                                        </span>
                                     </label>
 
                                     {showCouponInput && (
-                                        <div className="mt-5 animate-in slide-in-from-top-4 duration-500">
-                                            <div className="relative">
-                                                <input
-                                                    type="text"
-                                                    value={formData.coupon_code}
-                                                    onChange={(e) => setFormData({ ...formData, coupon_code: e.target.value.toUpperCase() })}
-                                                    className="w-full px-4 py-3 rounded-xl border-2 border-stone-200 bg-white focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10 focus:outline-none font-black text-stone-900 shadow-sm text-sm tracking-widest uppercase transition-all"
-                                                    placeholder="ENTER CODE"
-                                                />
-                                            </div>
+                                        <div className="mt-5 animate-in slide-in-from-top-2 duration-300">
+                                            <input
+                                                type="text"
+                                                value={formData.coupon_code}
+                                                onChange={(e) => setFormData({ ...formData, coupon_code: e.target.value.toUpperCase() })}
+                                                className="w-full px-4 py-3 rounded-xl border-2 border-stone-200 bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 focus:outline-none font-bold text-stone-900 text-sm tracking-widest uppercase transition-all placeholder:text-stone-400"
+                                                placeholder="Enter coupon code"
+                                            />
                                             {formData.coupon_code && (
-                                                <p className="text-[9px] text-amber-600 font-black mt-2 uppercase tracking-widest italic animate-pulse">
-                                                    Code will be validated on processing
-                                                </p>
+                                                <p className="text-xs text-amber-600 font-bold mt-2">Code will be validated when processing your order</p>
                                             )}
                                         </div>
                                     )}
@@ -379,9 +395,9 @@ export default function CheckoutPage() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className={`w-full py-4 rounded-xl font-black uppercase tracking-widest transition-all duration-500 shadow-xl ${loading
+                                    className={`w-full py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest text-sm md:text-base transition-all duration-300 ${loading
                                         ? "bg-stone-200 text-stone-400 cursor-not-allowed"
-                                        : "bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/30 active:scale-[0.98]"
+                                        : "bg-amber-600 text-white hover:bg-amber-700 shadow-lg shadow-amber-600/25 hover:shadow-xl hover:shadow-amber-600/30 active:scale-[0.99]"
                                         }`}
                                 >
                                     {loading ? (

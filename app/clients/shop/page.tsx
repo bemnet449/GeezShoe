@@ -203,7 +203,7 @@ export default function ShopPage() {
                     <div className="sm:hidden w-full overflow-hidden">
                         <div
                             ref={adCarouselRef}
-                            className="flex gap-4 overflow-x-auto overflow-y-hidden scroll-smooth scrollbar-hide snap-x snap-mandatory pb-2 -mx-4 px-4"
+                            className="flex gap-4 overflow-x-auto overflow-y-hidden scroll-smooth scrollbar-hide snap-x snap-mandatory pb-2 px-6 md:px-8"
                             onScroll={() => {
                                 const el = adCarouselRef.current;
                                 const slide = adSlideRef.current;
@@ -250,7 +250,7 @@ export default function ShopPage() {
                     </div>
 
                     {/* Desktop: grid, no auto-scroll */}
-                    <div className="hidden sm:block container mx-auto px-6">
+                    <div className="hidden sm:block container mx-auto px-8 md:px-12 lg:px-16">
                         <div className={`grid gap-4 md:gap-6 ${companyAdImages.length === 1 ? "grid-cols-1 max-w-4xl mx-auto" : "grid-cols-1 sm:grid-cols-2"}`}>
                             {companyAdImages.map((url, i) => (
                                 <div key={i} className="relative aspect-[21/9] sm:aspect-[3/1] rounded-2xl overflow-hidden bg-stone-200 shadow-md">
@@ -364,20 +364,21 @@ export default function ShopPage() {
                                             <h3 className="text-sm md:text-xl font-black text-stone-900 group-hover:text-amber-600 transition-colors line-clamp-1 uppercase tracking-tight leading-tight">
                                                 {product.Name}
                                             </h3>
-                                            <div className="flex flex-row md:flex-col items-center md:items-end gap-2 md:gap-0">
-                                                <span className="text-sm md:text-lg font-black text-stone-900 leading-none">
-                                                    ${product.discount && product.discount_price ? product.discount_price : product.real_price}
-                                                </span>
-                                                {/* Crossed-out price logic */}
-                                                {product.discount ? (
-                                                    <span className="text-[10px] md:text-xs text-stone-400 line-through font-bold">
+                                            <div className="flex flex-wrap items-baseline gap-2">
+                                                {/* Crossed-out: original price when discounted, or fake/MSRP when fake_price exists */}
+                                                {(product.discount && product.discount_price != null) && (
+                                                    <span className="text-[10px] md:text-sm text-stone-400 line-through font-bold">
                                                         ${product.real_price}
                                                     </span>
-                                                ) : product.fake_price && Number(product.fake_price) > Number(product.real_price) ? (
-                                                    <span className="text-[10px] md:text-xs text-stone-400 line-through font-bold">
+                                                )}
+                                                {(!product.discount && product.fake_price != null && Number(product.fake_price) > Number(product.real_price)) && (
+                                                    <span className="text-[10px] md:text-sm text-stone-400 line-through font-bold">
                                                         ${product.fake_price}
                                                     </span>
-                                                ) : null}
+                                                )}
+                                                <span className="text-sm md:text-lg font-black text-stone-900 leading-none">
+                                                    ${product.discount && product.discount_price != null ? product.discount_price : product.real_price}
+                                                </span>
                                             </div>
                                         </div>
 

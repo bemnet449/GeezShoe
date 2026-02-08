@@ -141,7 +141,7 @@ export default function ProductDetailPage() {
                                     )}
                                 </div>
 
-                                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 md:gap-4 px-1">
+                                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 md:gap-4 px-2 md:px-6">
                                     {product.image_urls?.map((url, index) => (
                                         <button
                                             key={index}
@@ -164,8 +164,13 @@ export default function ProductDetailPage() {
                             {/* Product Info */}
                             <div className="flex flex-col">
                                 <div className="mb-6 md:mb-8">
-                                    <div className="flex items-center space-x-2 md:space-x-3 mb-3 md:mb-4">
+                                    <div className="flex items-center flex-wrap gap-2 md:gap-3 mb-3 md:mb-4">
                                         <h2 className="text-[8px] md:text-[10px] uppercase font-bold tracking-[0.1em] sm:tracking-[0.3em] md:tracking-[0.5em] text-amber-600">Premium Footwear</h2>
+                                        {!product.is_active && (
+                                            <span className="bg-stone-800 text-white text-[8px] md:text-[10px] font-black px-3 md:px-4 py-1 md:py-1.5 rounded-full uppercase tracking-widest border border-stone-600 shadow-md">
+                                                Out of Stock
+                                            </span>
+                                        )}
                                         {product.discount && (
                                             <span className="bg-amber-100 text-amber-900 text-[8px] md:text-[10px] font-black px-2 md:px-3 py-0.5 md:py-1 rounded-full uppercase tracking-widest">
                                                 On Sale
@@ -173,26 +178,27 @@ export default function ProductDetailPage() {
                                         )}
                                     </div>
                                     <h1 className="text-3xl md:text-5xl font-black text-stone-900 mb-3 md:mb-4 tracking-tight leading-tight uppercase">{product.Name}</h1>
-                                    <div className="flex items-center space-x-4 md:space-x-6 mb-4 md:mb-6">
-                                        <div className="text-3xl md:text-4xl font-black text-stone-900 italic">
+                                    <div className="flex flex-wrap items-baseline gap-3 md:gap-4 mb-4 md:mb-6">
+                                        {/* Crossed-out: original/discount price when on sale, fake_price when higher, or base price when preorder */}
+                                        {isPreorder ? (
+                                            <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
+                                                ${product.discount && product.discount_price != null ? product.discount_price : product.real_price}
+                                            </span>
+                                        ) : (product.discount && product.discount_price != null) ? (
+                                            <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
+                                                ${product.real_price}
+                                            </span>
+                                        ) : (product.fake_price != null && Number(product.fake_price) > Number(product.real_price)) ? (
+                                            <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
+                                                ${product.fake_price}
+                                            </span>
+                                        ) : null}
+                                        <span className="text-3xl md:text-4xl font-black text-stone-900 italic">
                                             ${isPreorder
                                                 ? ((product.discount && product.discount_price ? product.discount_price : product.real_price) * 0.9).toFixed(2)
                                                 : (product.discount && product.discount_price ? product.discount_price : product.real_price)
                                             }
-                                        </div>
-                                        {isPreorder ? (
-                                            <div className="text-xl md:text-2xl text-stone-400 line-through font-bold">
-                                                ${product.discount && product.discount_price ? product.discount_price : product.real_price}
-                                            </div>
-                                        ) : product.discount ? (
-                                            <div className="text-xl md:text-2xl text-stone-400 line-through font-bold">
-                                                ${product.real_price}
-                                            </div>
-                                        ) : product.fake_price && Number(product.fake_price) > Number(product.real_price) ? (
-                                            <div className="text-xl md:text-2xl text-stone-400 line-through font-bold">
-                                                ${product.fake_price}
-                                            </div>
-                                        ) : null}
+                                        </span>
                                     </div>
                                     <p className="text-stone-600 leading-relaxed text-sm md:text-lg max-w-xl font-medium">
                                         {product.description || "Hand-crafted with meticulous attention to detail using the finest Ethiopian leather."}
@@ -275,24 +281,33 @@ export default function ProductDetailPage() {
 
                                 {/* Pre-order Option */}
                                 {!product.is_active && (
-                                    <div className="mb-8 p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-200 shadow-lg shadow-amber-200/20 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                        <label className="flex items-center space-x-4 cursor-pointer group">
-                                            <div className="relative">
+                                    <div className="mb-8 p-6 md:p-8 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-200/80 shadow-xl shadow-amber-200/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                        <label className="flex items-start gap-4 cursor-pointer group">
+                                            <div className="relative flex-shrink-0 mt-0.5">
                                                 <input
                                                     type="checkbox"
                                                     checked={isPreorder}
                                                     onChange={(e) => setIsPreorder(e.target.checked)}
-                                                    className="w-6 h-6 rounded-lg border-2 border-amber-600 text-amber-600 focus:ring-amber-600 focus:ring-offset-0 cursor-pointer transition-all duration-300"
+                                                    className="peer sr-only"
                                                 />
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center space-x-2">
-                                                    <span className="text-sm md:text-base font-black text-stone-900 group-hover:text-amber-700 transition-colors uppercase tracking-tight">
-                                                        Pre-Order (Get 10% Off)
-                                                    </span>
-                                                    <span className="bg-amber-600 text-white text-[8px] md:text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Save 10%</span>
+                                                <div className={`w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300 group-hover:border-amber-500 ${isPreorder ? 'bg-amber-600 border-amber-600' : 'bg-white border-amber-300'}`}>
+                                                    {isPreorder && (
+                                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    )}
                                                 </div>
-                                                <p className="text-xs text-stone-500 mt-1 font-medium">This item is currently out of stock. Pre-order now and get an exclusive discount!</p>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                    <span className="text-sm md:text-base font-black text-stone-900 group-hover:text-amber-700 transition-colors uppercase tracking-tight">
+                                                        Pre-Order Available
+                                                    </span>
+                                                    <span className="inline-flex items-center bg-amber-600 text-white text-[9px] md:text-[10px] font-black px-3 py-1 rounded-lg uppercase shadow-sm">
+                                                        10% Off
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs md:text-sm text-stone-600 mt-1 font-medium leading-relaxed">This item is currently out of stock. Reserve yours now and get an exclusive discount when it arrives!</p>
                                             </div>
                                         </label>
                                     </div>
