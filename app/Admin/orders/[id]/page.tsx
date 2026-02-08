@@ -64,19 +64,44 @@ export default function OrderDetailsPage() {
     }
 
     async function fetchProductImages(productIds: string[]) {
+        if (!productIds || productIds.length === 0) return;
+
+        const numericIds = productIds.map((id) => Number(id)).filter((n) => !Number.isNaN(n));
+        console.log("🧪 Product IDs from order (raw):", productIds, "→ numeric:", numericIds);
+
+        const { data, error } = await supabase
+            .from("products")
+            .select("id, image_urls")
+            .in("id", numericIds);
+
+        if (error) {
+            console.error("❌ Failed to fetch product images:", error);
+            return;
+        }
+
+        console.log("🧪 Products fetched from Supabase:", data);
+
         const imageMap: Record<string, string> = {};
 
-        for (const productId of productIds) {
-            const { data, error } = await supabase
-                .from("products")
-                .select("image_urls")
-                .eq("id", productId)
-                .single();
+        data?.forEach((product) => {
+            let urls: string[] = [];
 
-            if (!error && data?.image_urls && data.image_urls.length > 0) {
-                imageMap[productId] = data.image_urls[0];
+            if (Array.isArray(product.image_urls)) {
+                urls = product.image_urls;
+            } else if (typeof product.image_urls === "string") {
+                try {
+                    urls = JSON.parse(product.image_urls);
+                } catch (err) {
+                    console.warn("⚠️ Failed to parse image_urls for product:", product.id);
+                }
             }
-        }
+
+            if (urls.length > 0) {
+                imageMap[String(product.id)] = urls[0];
+            }
+        });
+
+        console.log("✅ Product image map:", imageMap);
 
         setProductImages(imageMap);
     }

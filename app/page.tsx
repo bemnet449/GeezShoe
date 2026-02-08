@@ -1,9 +1,32 @@
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
+const COMPANY_INFO_ID = 1;
 
-export default function Home() {
+function normalizePhoneForWhatsApp(phone: string | null | undefined): string {
+  if (!phone?.trim()) return "251911000000";
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("251")) return digits;
+  if (digits.startsWith("0")) return "251" + digits.slice(1);
+  return "251" + digits;
+}
+
+export default async function Home() {
+  const { data: company } = await supabase
+    .from("company_info")
+    .select("email, phone_number, instagram, whatsapp, telegram")
+    .eq("id", COMPANY_INFO_ID)
+    .maybeSingle();
+
+  const email = company?.email?.trim() || "hello@geezshoe.com";
+  const phone = company?.phone_number?.trim() || "+251 911 00 00 00";
+  const phoneDigits = normalizePhoneForWhatsApp(company?.phone_number || company?.whatsapp);
+  const whatsappHref = `https://wa.me/${phoneDigits}`;
+  const instagramHref = company?.instagram?.trim() || "https://instagram.com/geez_shoe";
+  const telegramHref = company?.telegram?.trim() || "https://t.me/geezshoe";
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -156,79 +179,98 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-32 bg-stone-900 border-t border-stone-800 transition-colors duration-1000">
+      {/* Contact Section — matches About typography & theme */}
+      <section id="contact" className="py-32 bg-stone-900 border-t border-stone-800">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col lg:flex-row items-start justify-between gap-16 lg:gap-24">
-            {/* Left Column: Editorial Heading */}
-            <div className="lg:w-1/2">
-              <span className="text-amber-500 text-xs font-black uppercase tracking-[0.5em] mb-8 block">Personal Service</span>
-              <h3 className="text-6xl md:text-8xl font-black text-white leading-[0.9] mb-12 tracking-tighter">
-                LET'S STEP <br /> INTO THE <br /> <span className="text-stone-700 italic border-b-4 border-stone-800 pb-2">EXCLUSIVE</span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+            {/* Left: same hierarchy as About "Our Story" */}
+            <div>
+              <h2 className="text-[10px] md:text-sm uppercase font-bold tracking-[0.4em] text-amber-600 mb-4 md:mb-6">Get in touch</h2>
+              <h3 className="text-4xl md:text-6xl font-black text-white mb-6 md:mb-10 tracking-tight leading-tight">
+                LET'S STEP <br className="hidden md:block" /> INTO THE <span className="text-amber-500/90 italic">EXCLUSIVE</span>
               </h3>
-              <p className="text-stone-400 text-lg md:text-xl leading-relaxed max-w-md italic font-medium">
-                "Direct paths to our artisans. Whether by message or call, we are here to guide your choice."
+              <p className="text-stone-400 text-base md:text-lg leading-relaxed max-w-md italic font-medium">
+                Direct paths to our artisans. Whether by message or call, we are here to guide your choice.
               </p>
+              <div className="mt-8 pt-8 border-t border-stone-800">
+                <p className="text-stone-500 text-sm italic font-medium">Ge'ez Shoes — Handmade with purpose. Worn with pride.</p>
+              </div>
             </div>
 
-            {/* Right Column: Interactive Grid */}
-            <div className="lg:w-1/2 w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* WhatsApp - Major Hook */}
-              <a href="https://wa.me/251911000000" target="_blank" className="group relative overflow-hidden bg-stone-800/40 p-10 rounded-[2.5rem] border border-stone-700/50 hover:bg-amber-600 transition-all duration-700 md:col-span-2 shadow-2xl">
+            {/* Right: contact cards — stone/amber, rounded-[2rem] like About */}
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+              {/* WhatsApp — primary CTA, brand orange hover */}
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative overflow-hidden bg-stone-800/60 p-8 md:p-10 rounded-[2rem] border border-stone-700/50 hover:bg-[#A8513B] hover:border-amber-900/50 transition-all duration-300 md:col-span-2 shadow-xl"
+              >
                 <div className="flex justify-between items-center relative z-10">
-                  <div className="space-y-3">
-                    <span className="text-[10px] text-stone-500 group-hover:text-white uppercase font-black tracking-widest block">Instant Priority</span>
-                    <h4 className="text-3xl font-black text-white tracking-tight">WHATSAPP</h4>
+                  <div className="space-y-2">
+                    <span className="text-[10px] text-stone-500 group-hover:text-white/80 uppercase font-bold tracking-[0.2em] block">Instant priority</span>
+                    <h4 className="text-2xl md:text-3xl font-black text-white tracking-tight">WhatsApp</h4>
                   </div>
-                  <div className="w-16 h-16 bg-stone-900 group-hover:bg-white/20 rounded-3xl flex items-center justify-center transition-all duration-500 group-hover:rotate-12 shadow-lg">
-                    <svg className="w-10 h-10 text-amber-500 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.412.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+                  <div className="w-14 h-14 md:w-16 md:h-16 bg-stone-900/80 group-hover:bg-white/20 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:rotate-6">
+                    <svg className="w-8 h-8 md:w-10 md:h-10 text-amber-500 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.412.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
                   </div>
                 </div>
-                {/* Motion Background */}
-                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-white/0 to-white/0 group-hover:from-white/10 transition-all duration-1000 pointer-events-none"></div>
               </a>
 
               {/* Instagram */}
-              <a href="https://instagram.com/geez_shoe" target="_blank" className="group bg-stone-800/30 p-8 rounded-[2rem] border border-stone-700/50 hover:border-amber-500/50 transition-all duration-500">
-                <div className="w-12 h-12 bg-stone-900 rounded-2xl flex items-center justify-center text-amber-600 mb-8 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-md">
+              <a
+                href={instagramHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group bg-stone-800/50 p-6 md:p-8 rounded-[2rem] border border-stone-700/50 hover:border-amber-500/40 hover:bg-stone-800 transition-all duration-300"
+              >
+                <div className="w-12 h-12 bg-stone-900 rounded-xl flex items-center justify-center text-amber-500 mb-6 group-hover:bg-amber-500 group-hover:text-white transition-all">
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
                 </div>
-                <h4 className="text-[10px] text-stone-600 uppercase font-black tracking-widest mb-1">Visual Story</h4>
-                <p className="text-white font-bold group-hover:text-amber-500 transition-colors">INSTAGRAM</p>
+                <p className="text-[10px] text-stone-500 uppercase font-bold tracking-widest mb-1">Visual story</p>
+                <p className="text-white font-black group-hover:text-amber-500 transition-colors">Instagram</p>
               </a>
 
               {/* Telegram */}
-              <a href="https://t.me/geezshoe" target="_blank" className="group bg-stone-800/30 p-8 rounded-[2rem] border border-stone-700/50 hover:border-amber-500/50 transition-all duration-500">
-                <div className="w-12 h-12 bg-stone-900 rounded-2xl flex items-center justify-center text-amber-600 mb-8 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-md">
+              <a
+                href={telegramHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group bg-stone-800/50 p-6 md:p-8 rounded-[2rem] border border-stone-700/50 hover:border-amber-500/40 hover:bg-stone-800 transition-all duration-300"
+              >
+                <div className="w-12 h-12 bg-stone-900 rounded-xl flex items-center justify-center text-amber-500 mb-6 group-hover:bg-amber-500 group-hover:text-white transition-all">
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14.144.118.177.3.175.428-.003.075-.033.256-.063.422l-.803 4.273c-.221 1.173-.442 2.345-.663 3.518-.035.18-.112.434-.306.522-.191.087-.455.028-.534-.015-.203-.109-.34-.234-.477-.329a17.203 17.203 0 01-1.432-1.076l-1.09-1.054a.652.652 0 01-.115-.811c.211-.318.841-1.284 1.256-1.688.423-.414.858-.844 1.285-1.266l.044-.044c.16-.16.326-.328.326-.452 0-.203-.234-.144-.336-.109-.156.05-.62.355-1.127.684l-2.031 1.332a.415.415 0 01-.295.059l-2.03-.637c-.389-.122-.7-.184-.509-.434.025-.033.052-.064.085-.094.214-.199.789-.43 1.579-.76l4.634-1.921c1-.415 1.55-.65 2.153-.65z" /></svg>
                 </div>
-                <h4 className="text-[10px] text-stone-600 uppercase font-black tracking-widest mb-1">Channel</h4>
-                <p className="text-white font-bold group-hover:text-amber-500 transition-colors">TELEGRAM</p>
+                <p className="text-[10px] text-stone-500 uppercase font-bold tracking-widest mb-1">Channel</p>
+                <p className="text-white font-black group-hover:text-amber-500 transition-colors">Telegram</p>
               </a>
 
-              {/* Email - Large Bar */}
-              <a href="mailto:hello@geezshoe.com" className="group bg-stone-800/40 p-8 rounded-[2rem] border border-stone-700/50 hover:bg-white transition-all duration-700 md:col-span-2 flex items-center justify-between">
-                <div className="flex items-center space-x-6">
-                  <div className="w-10 h-10 rounded-full bg-stone-900 group-hover:bg-amber-100 flex items-center justify-center text-stone-500 group-hover:text-amber-600 transition-all">
+              {/* Email */}
+              <a
+                href={`mailto:${email}`}
+                className="group bg-stone-800/50 p-6 md:p-8 rounded-[2rem] border border-stone-700/50 hover:border-amber-500/40 hover:bg-stone-800 transition-all duration-300 md:col-span-2 flex items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-10 h-10 shrink-0 rounded-full bg-stone-900 flex items-center justify-center text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-all">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-stone-600 uppercase font-black tracking-widest mb-1">Direct Email</span>
-                    <span className="text-xl md:text-2xl font-black text-stone-400 group-hover:text-stone-900 transition-colors tracking-tighter">hello@geezshoe.com</span>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-stone-500 uppercase font-bold tracking-widest mb-0.5">Direct email</p>
+                    <p className="text-lg md:text-xl font-black text-white truncate group-hover:text-amber-500 transition-colors">{email}</p>
                   </div>
                 </div>
-                <div className="w-12 h-12 rounded-full border border-stone-800 group-hover:border-stone-900 flex items-center justify-center text-stone-700 group-hover:text-stone-900 transition-all group-hover:rotate-45">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                <div className="w-10 h-10 shrink-0 rounded-full border border-stone-600 flex items-center justify-center text-stone-500 group-hover:border-amber-500 group-hover:text-amber-500 transition-all group-hover:rotate-45">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                 </div>
               </a>
 
-              {/* Call Link */}
-              <div className="md:col-span-2 pt-8 flex items-center space-x-6 group/phone">
-                <span className="text-[10px] text-stone-700 uppercase font-bold tracking-widest whitespace-nowrap">Voice Call —</span>
-                <a href="tel:+251911000000" className="text-2xl md:text-3xl font-black text-stone-600 hover:text-white transition-colors tracking-tighter">
-                  +251 911 00 00 00
+              {/* Phone */}
+              <div className="md:col-span-2 flex flex-wrap items-center gap-4 pt-2">
+                <span className="text-[10px] text-stone-500 uppercase font-bold tracking-widest">Voice call</span>
+                <a href={`tel:${phoneDigits}`} className="text-xl md:text-2xl font-black text-white hover:text-amber-500 transition-colors tracking-tight">
+                  {phone}
                 </a>
-                <div className="h-[1px] bg-stone-800 flex-1 group-hover/phone:bg-stone-600 transition-colors"></div>
+                <div className="h-px flex-1 min-w-[4rem] bg-stone-700" />
               </div>
             </div>
           </div>

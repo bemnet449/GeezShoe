@@ -27,9 +27,59 @@ export default function ShopPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState(""); // Debounced search query
     const [showOnlyDiscounts, setShowOnlyDiscounts] = useState(false);
+    const [companyAdImages, setCompanyAdImages] = useState<string[]>([]);
+    const [currentAdIndex, setCurrentAdIndex] = useState(0);
+    const [isMobile, setIsMobile] = useState(false);
+    const adCarouselRef = useRef<HTMLDivElement>(null);
+    const adSlideRef = useRef<HTMLDivElement>(null);
     const observerTarget = useRef<HTMLDivElement>(null);
     const isResettingRef = useRef(false); // Ref to block observer during reset
     const pageRef = useRef(0); // Single source of truth for pagination
+
+    // Fetch company ad images (above collection)
+    useEffect(() => {
+        (async () => {
+            const { data } = await supabase
+                .from("company_info")
+                .select("ad_img")
+                .eq("id", 1)
+                .maybeSingle();
+            if (!data?.ad_img) return;
+            let urls: string[] = [];
+            if (Array.isArray(data.ad_img)) urls = data.ad_img;
+            else if (typeof data.ad_img === "string") {
+                try {
+                    urls = JSON.parse(data.ad_img);
+                } catch {
+                    urls = [];
+                }
+            }
+            setCompanyAdImages(Array.isArray(urls) ? urls : []);
+        })();
+    }, []);
+
+    // Only run auto-advance on phone size
+    useEffect(() => {
+        const mql = window.matchMedia("(max-width: 639px)");
+        const update = () => setIsMobile(mql.matches);
+        update();
+        mql.addEventListener("change", update);
+        return () => mql.removeEventListener("change", update);
+    }, []);
+
+    // Auto-advance company ad carousel (mobile only, 85% width slides)
+    useEffect(() => {
+        if (!isMobile || companyAdImages.length <= 1 || !adCarouselRef.current || !adSlideRef.current) return;
+        const el = adCarouselRef.current;
+        const interval = setInterval(() => {
+            const next = (currentAdIndex + 1) % companyAdImages.length;
+            setCurrentAdIndex(next);
+            const slideWidth = adSlideRef.current?.getBoundingClientRect().width ?? 0;
+            const gap = 16; // gap-4
+            el.scrollTo({ left: next * (slideWidth + gap), behavior: "smooth" });
+        }, 4500);
+        return () => clearInterval(interval);
+    }, [isMobile, companyAdImages.length, currentAdIndex]);
 
     // Debounce search query
     useEffect(() => {
@@ -146,8 +196,78 @@ export default function ShopPage() {
     return (
         <div className="min-h-screen bg-stone-50">
             <ShopNavbar />
+            {/* Company ad images */}
+            {companyAdImages.length > 0 && (
+                <div className="pt-28 pb-8">
+                    {/* Mobile only: 85% width slides, horizontal scroll, auto-advance */}
+                    <div className="sm:hidden w-full overflow-hidden">
+                        <div
+                            ref={adCarouselRef}
+                            className="flex gap-4 overflow-x-auto overflow-y-hidden scroll-smooth scrollbar-hide snap-x snap-mandatory pb-2 -mx-4 px-4"
+                            onScroll={() => {
+                                const el = adCarouselRef.current;
+                                const slide = adSlideRef.current;
+                                if (!el || !slide || companyAdImages.length <= 1) return;
+                                const slideWidth = slide.getBoundingClientRect().width;
+                                const gap = 16;
+                                const index = Math.round(el.scrollLeft / (slideWidth + gap));
+                                setCurrentAdIndex(Math.min(Math.max(0, index), companyAdImages.length - 1));
+                            }}
+                        >
+                            {companyAdImages.map((url, i) => (
+                                <div
+                                    key={i}
+                                    ref={i === 0 ? adSlideRef : undefined}
+                                    className="relative flex-shrink-0 w-[85vw] max-w-[85vw] aspect-[21/9] snap-start snap-always rounded-2xl overflow-hidden bg-stone-200 shadow-md"
+                                >
+                                    <img
+                                        src={url}
+                                        alt={`Promo ${i + 1}`}
+                                        className="w-full h-full object-cover"
+                                        loading={i === 0 ? "eager" : "lazy"}
+                                        decoding="async"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                        {companyAdImages.length > 1 && (
+                            <div className="flex justify-center gap-2 mt-4">
+                                {companyAdImages.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        aria-label={`Go to slide ${i + 1}`}
+                                        onClick={() => {
+                                            const slideWidth = adSlideRef.current?.getBoundingClientRect().width ?? 0;
+                                            setCurrentAdIndex(i);
+                                            adCarouselRef.current?.scrollTo({ left: i * (slideWidth + 16), behavior: "smooth" });
+                                        }}
+                                        className={`h-2 rounded-full transition-all duration-300 ${i === currentAdIndex ? "w-6 bg-amber-600" : "w-2 bg-stone-300 hover:bg-stone-400"}`}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
-            <div className="pt-32 pb-24 container mx-auto px-6">
+                    {/* Desktop: grid, no auto-scroll */}
+                    <div className="hidden sm:block container mx-auto px-6">
+                        <div className={`grid gap-4 md:gap-6 ${companyAdImages.length === 1 ? "grid-cols-1 max-w-4xl mx-auto" : "grid-cols-1 sm:grid-cols-2"}`}>
+                            {companyAdImages.map((url, i) => (
+                                <div key={i} className="relative aspect-[21/9] sm:aspect-[3/1] rounded-2xl overflow-hidden bg-stone-200 shadow-md">
+                                    <img
+                                        src={url}
+                                        alt={`Promo ${i + 1}`}
+                                        className="w-full h-full object-cover"
+                                        loading={i === 0 ? "eager" : "lazy"}
+                                        decoding="async"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+            <div className={`pb-24 container mx-auto px-6 ${companyAdImages.length > 0 ? "pt-12" : "pt-32"}`}>
                 {/* Header & Search */}
                 <div className="mb-10 md:mb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-8">
                     <div className="max-w-xl">
