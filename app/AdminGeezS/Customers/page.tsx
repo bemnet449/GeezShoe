@@ -33,7 +33,7 @@ export default function CustomersPage() {
                 data: { user },
             } = await supabase.auth.getUser();
             if (!user) {
-                router.push("/Admin/Login");
+                router.push("/AdminGeezS/Login");
             }
         };
 
@@ -70,29 +70,26 @@ export default function CustomersPage() {
                         {customers.map((c, index) => (
                             <tr
                                 key={c.phone ?? index}
-                                className={`border-t ${
-                                    index < 10
+                                className={`border-t ${index < 10
                                         ? "bg-amber-50 hover:bg-amber-100"
                                         : "hover:bg-stone-50"
-                                } transition-all`}
+                                    } transition-all`}
                             >
                                 <td
-                                    className={`p-4 font-bold ${
-                                        index < 10
+                                    className={`p-4 font-bold ${index < 10
                                             ? "text-amber-700"
                                             : "text-stone-900"
-                                    }`}
+                                        }`}
                                 >
                                     {c.name}
                                 </td>
                                 <td className="p-4 text-stone-600">{c.email}</td>
                                 <td className="p-4 text-stone-600">{c.phone}</td>
                                 <td
-                                    className={`p-4 font-black ${
-                                        index < 10
+                                    className={`p-4 font-black ${index < 10
                                             ? "text-amber-700"
                                             : "text-stone-900"
-                                    }`}
+                                        }`}
                                 >
                                     {c.total_items_purchased}
                                 </td>

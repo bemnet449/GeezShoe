@@ -11,7 +11,7 @@ export default function AdminLayout({
 }) {
     const pathname = usePathname();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const isLoginPage = pathname === "/Admin/Login";
+    const isLoginPage = pathname === "/AdminGeezS/Login";
 
     return (
         <div className="min-h-screen bg-stone-50 flex flex-col lg:flex-row">
@@ -40,7 +40,7 @@ export default function AdminLayout({
                     <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
                 </>
             )}
-            <div className={`flex-1 w-full min-h-screen ${isLoginPage || !pathname.startsWith('/Admin') ? "" : "lg:pl-64"}`}>
+            <div className={`flex-1 w-full min-h-screen ${isLoginPage || !pathname.startsWith('/AdminGeezS') ? "" : "lg:pl-64"}`}>
                 <main className="p-4 md:p-8 max-w-7xl mx-auto">
                     {children}
                 </main>

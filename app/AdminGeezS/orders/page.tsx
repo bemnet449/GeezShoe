@@ -133,7 +133,7 @@ export default function OrdersPage() {
                                 </div>
                             </div>
                             <Link
-                                href={`/Admin/orders/${order.id}`}
+                                href={`/AdminGeezS/orders/${order.id}`}
                                 className="block w-full text-center bg-stone-50 text-stone-900 py-3 rounded-xl font-bold text-sm hover:bg-stone-100 transition-colors border border-stone-100"
                             >
                                 View Order Details

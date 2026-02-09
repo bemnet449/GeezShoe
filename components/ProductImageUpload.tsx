@@ -162,7 +162,7 @@ export default function ProductImageUpload({
                 {url ? (
                   <>
                     <img src={url} alt={`Product ${slotIndex + 1}`} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3">
+                    <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3">
                       <label className="cursor-pointer px-4 py-2 bg-white/20 backdrop-blur-md rounded-lg text-white text-sm font-semibold hover:bg-white/30 transition-colors">
                         Change
                         <input

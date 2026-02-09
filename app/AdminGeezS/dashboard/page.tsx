@@ -139,7 +139,7 @@ const AdminDashboard = () => {
                 </Link>
 
                 {/* Inventory Card */}
-                <Link href="/Admin/products" className="group bg-white rounded-[2.5rem] p-8 md:p-10 border-2 border-stone-100 hover:border-amber-600/20 shadow-sm hover:shadow-2xl transition-all duration-500">
+                <Link href="/AdminGeezS/products" className="group bg-white rounded-[2.5rem] p-8 md:p-10 border-2 border-stone-100 hover:border-amber-600/20 shadow-sm hover:shadow-2xl transition-all duration-500">
                     <div className="h-full flex flex-col">
                         <div className="p-4 bg-amber-50 rounded-2xl w-fit mb-8 md:mb-12 group-hover:bg-amber-600 transition-colors duration-500">
                             <svg className="w-6 h-6 md:w-8 md:h-8 text-amber-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">

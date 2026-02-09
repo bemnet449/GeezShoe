@@ -132,7 +132,7 @@ export default function CompanyImageUpload({
             {url ? (
               <>
                 <img src={url} className="w-full h-full object-cover" alt={`Ad image ${idx + 1}`} />
-                <div className="absolute inset-0 bg-stone-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex gap-3 items-center justify-center">
+                <div className="absolute inset-0 bg-stone-900/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex gap-3 items-center justify-center">
                   <label className="bg-white text-stone-900 px-4 py-2 rounded-xl cursor-pointer text-sm font-bold shadow-lg hover:bg-stone-50 transition-colors">
                     Change
                     <input type="file" hidden accept="image/*" onChange={(e) => handleFileSelect(e, idx)} />

@@ -223,7 +223,7 @@ export default function ShopPage() {
                                     <img
                                         src={url}
                                         alt={`Promo ${i + 1}`}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-contain"
                                         loading={i === 0 ? "eager" : "lazy"}
                                         decoding="async"
                                     />
@@ -257,7 +257,7 @@ export default function ShopPage() {
                                     <img
                                         src={url}
                                         alt={`Promo ${i + 1}`}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-contain"
                                         loading={i === 0 ? "eager" : "lazy"}
                                         decoding="async"
                                     />

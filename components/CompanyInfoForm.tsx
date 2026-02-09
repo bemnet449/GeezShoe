@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import CompanyAdImageUpload from "@/components/CompanyAdImageUpload";
 
@@ -16,6 +17,7 @@ export interface CompanyInfoData {
 const COMPANY_ID = 1; // single-row pattern
 
 export default function CompanyInfoForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState<CompanyInfoData>({
     email: "",
     phone_number: "",
@@ -122,6 +124,7 @@ export default function CompanyInfoForm() {
       setError(error.message);
     } else {
       setSuccess(true);
+      router.push("/AdminGeezS/dashboard");
     }
 
     setSaving(false);
@@ -275,11 +278,10 @@ export default function CompanyInfoForm() {
         <button
           type="submit"
           disabled={saving}
-          className={`px-8 py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all shadow-lg ${
-            saving
-              ? "bg-stone-300 text-stone-500 cursor-not-allowed shadow-none"
-              : "bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/25 active:scale-[0.98]"
-          }`}
+          className={`px-8 py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all shadow-lg ${saving
+            ? "bg-stone-300 text-stone-500 cursor-not-allowed shadow-none"
+            : "bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/25 active:scale-[0.98]"
+            }`}
         >
           {saving ? (
             <span className="flex items-center gap-2">

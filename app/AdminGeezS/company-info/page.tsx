@@ -13,7 +13,7 @@ export default function CompanyInfoPage() {
         const checkAuth = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                router.push("/Admin/Login");
+                router.push("/AdminGeezS/Login");
                 return;
             }
             setAuthChecked(true);

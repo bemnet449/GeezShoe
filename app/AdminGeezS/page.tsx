@@ -8,7 +8,7 @@ const AdminPage = () => {
 
     useEffect(() => {
         // Redirect to login page
-        router.push("/Admin/Login");
+        router.push("/AdminGeezS/Login");
     }, [router]);
 
     return (

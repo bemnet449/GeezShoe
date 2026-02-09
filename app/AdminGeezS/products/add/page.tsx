@@ -9,14 +9,14 @@ export default function AddProductPage() {
     const router = useRouter();
 
     const handleSuccess = () => {
-        router.push("/Admin/products");
+        router.push("/AdminGeezS/products");
     };
 
     return (
         <div className="w-full">
             <main className="p-4 md:p-8">
                 <header className="mb-8 flex items-center space-x-4">
-                    <Link href="/Admin/products" className="p-2 bg-white rounded-lg shadow-sm border border-stone-200 text-stone-600 hover:text-amber-700 transition-all">
+                    <Link href="/AdminGeezS/products" className="p-2 bg-white rounded-lg shadow-sm border border-stone-200 text-stone-600 hover:text-amber-700 transition-all">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>

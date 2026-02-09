@@ -107,80 +107,80 @@ export default function OrderDetailsPage() {
 
         setActionLoading(true);
         try {
-          for (let i = 0; i < order.product_ids.length; i++) {
-  const product_id = Number(order.product_ids[i]);
-  const product_name = order.product_names[i];
-  const quantity = Number(order.quantities[i] ?? 1);
+            for (let i = 0; i < order.product_ids.length; i++) {
+                const product_id = Number(order.product_ids[i]);
+                const product_name = order.product_names[i];
+                const quantity = Number(order.quantities[i] ?? 1);
 
-  // Fetch current quantity_sold (if exists)
-  const { data: existingSale, error: fetchError } = await supabase
-    .from("sales")
-    .select("quantity_sold")
-    .eq("product_id", product_id)
-    .maybeSingle();
+                // Fetch current quantity_sold (if exists)
+                const { data: existingSale, error: fetchError } = await supabase
+                    .from("sales")
+                    .select("quantity_sold")
+                    .eq("product_id", product_id)
+                    .maybeSingle();
 
-  if (fetchError) throw fetchError;
+                if (fetchError) throw fetchError;
 
-  const newQuantity =
-    (existingSale?.quantity_sold || 0) + quantity;
+                const newQuantity =
+                    (existingSale?.quantity_sold || 0) + quantity;
 
-  // Atomic upsert
-  const { error: upsertError } = await supabase
-    .from("sales")
-    .upsert(
-      {
-        product_id,
-        product_name,
-        quantity_sold: newQuantity,
-      },
-      {
-        onConflict: "product_id", // must match UNIQUE constraint
-      }
-    );
+                // Atomic upsert
+                const { error: upsertError } = await supabase
+                    .from("sales")
+                    .upsert(
+                        {
+                            product_id,
+                            product_name,
+                            quantity_sold: newQuantity,
+                        },
+                        {
+                            onConflict: "product_id", // must match UNIQUE constraint
+                        }
+                    );
 
-  if (upsertError) throw upsertError;
-}
+                if (upsertError) throw upsertError;
+            }
 
 
             /* 2. Upsert CUSTOMER record */
 
             // Calculate total items in the order
-const totalItemsPurchased = order.quantities.reduce(
-    (sum, q) => sum + (q || 1),
-    0
-);
+            const totalItemsPurchased = order.quantities.reduce(
+                (sum, q) => sum + (q || 1),
+                0
+            );
 
-// Normalize phone
-const phone = order.customer_Phone.trim();
+            // Normalize phone
+            const phone = order.customer_Phone.trim();
 
-// Fetch existing customer by phone
-const { data: existingCustomer, error: fetchError } = await supabase
-    .from("customers")
-    .select("total_items_purchased")
-    .eq("phone", phone)
-    .single();
+            // Fetch existing customer by phone
+            const { data: existingCustomer, error: fetchError } = await supabase
+                .from("customers")
+                .select("total_items_purchased")
+                .eq("phone", phone)
+                .single();
 
-if (fetchError && fetchError.code !== "PGRST116") { // PGRST116 = no rows found
-    throw fetchError;
-}
+            if (fetchError && fetchError.code !== "PGRST116") { // PGRST116 = no rows found
+                throw fetchError;
+            }
 
-const newTotal =
-    (existingCustomer?.total_items_purchased || 0) + totalItemsPurchased;
+            const newTotal =
+                (existingCustomer?.total_items_purchased || 0) + totalItemsPurchased;
 
-// Upsert customer
-const { error: customerError } = await supabase
-    .from("customers")
-    .upsert(
-        {
-            name: order.customer_name,
-            email: order.customer_email,
-            phone: phone,
-            total_items_purchased: newTotal,
-        },
-        { onConflict: "phone" } // phone must be UNIQUE
-    );
+            // Upsert customer
+            const { error: customerError } = await supabase
+                .from("customers")
+                .upsert(
+                    {
+                        name: order.customer_name,
+                        email: order.customer_email,
+                        phone: phone,
+                        total_items_purchased: newTotal,
+                    },
+                    { onConflict: "phone" } // phone must be UNIQUE
+                );
 
-if (customerError) throw customerError;
+            if (customerError) throw customerError;
 
 
 
@@ -289,7 +289,7 @@ if (customerError) throw customerError;
     return (
         <div className="p-4 md:p-8">
             <Link
-                href="/Admin/orders"
+                href="/AdminGeezS/orders"
                 className="inline-flex items-center text-stone-500 hover:text-stone-900 transition-colors mb-6 font-bold text-sm"
             >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

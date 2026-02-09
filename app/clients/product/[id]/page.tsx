@@ -168,7 +168,7 @@ export default function ProductDetailPage() {
                                     <div className="flex items-center flex-wrap gap-2 md:gap-3 mb-3 md:mb-4">
                                         <h2 className="text-[8px] md:text-[10px] uppercase font-bold tracking-[0.1em] sm:tracking-[0.3em] md:tracking-[0.5em] text-amber-600">Premium Footwear</h2>
                                         {!product.is_active && (
-                                            <span className="bg-stone-800 text-white text-[8px] md:text-[10px] font-black px-3 md:px-4 py-1 md:py-1.5 rounded-full uppercase tracking-widest border border-stone-600 shadow-md">
+                                            <span className="bg-red-600 text-white text-[8px] md:text-[10px] font-black px-3 md:px-4 py-1 md:py-1.5 rounded-full uppercase tracking-widest border border-red-600 shadow-md">
                                                 Out of Stock
                                             </span>
                                         )}

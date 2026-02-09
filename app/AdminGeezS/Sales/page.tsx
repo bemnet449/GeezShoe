@@ -87,7 +87,7 @@ export default function SalesPage() {
             return;
         }
 
-        router.push(`/Admin/products/edit/${sale.product_id}`);
+        router.push(`/AdminGeezS/products/edit/${sale.product_id}`);
     }
 
     if (loading) {
@@ -130,11 +130,10 @@ export default function SalesPage() {
                                         <tr
                                             key={sale.id}
                                             onClick={() => handleProductClick(sale)}
-                                            className={`border-t border-stone-100 transition-all ${
-                                                index < 10
+                                            className={`border-t border-stone-100 transition-all ${index < 10
                                                     ? "bg-amber-50 hover:bg-amber-100"
                                                     : "hover:bg-stone-50"
-                                            } ${isAvailable ? "cursor-pointer" : "opacity-60 cursor-not-allowed"}`}
+                                                } ${isAvailable ? "cursor-pointer" : "opacity-60 cursor-not-allowed"}`}
                                         >
                                             <td className="p-4">
                                                 <div className="flex items-center gap-4">

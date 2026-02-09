@@ -56,7 +56,7 @@ const LoginPage = () => {
                 }
             } else if (data.user) {
                 // Successful login - redirect to dashboard
-                router.push("/Admin/dashboard");
+                router.push("/AdminGeezS/dashboard");
                 router.refresh();
             }
         } catch (err) {

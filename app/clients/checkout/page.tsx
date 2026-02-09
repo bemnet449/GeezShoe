@@ -145,7 +145,7 @@ export default function CheckoutPage() {
                         {/* Cart Items Column */}
                         <div>
                             <h2 className="text-2xl font-black text-stone-900 mb-6 uppercase tracking-tight">Your Order</h2>
-                            <div className="space-y-4">
+                            <div className="space-y-4 md:space-y-6">
                                 {cart.map((item, index) => (
                                     <div
                                         key={`${item.id}-${item.size}-${index}`}
@@ -185,13 +185,13 @@ export default function CheckoutPage() {
                                             </div>
                                         </div>
                                         <div className="flex flex-row sm:flex-col items-center justify-between sm:items-end sm:justify-between border-t border-stone-100 pt-3 sm:pt-0 sm:border-t-0 gap-3">
-                                            <div className="flex items-center border-2 border-stone-100 rounded-xl overflow-hidden bg-stone-50 order-1 sm:order-2">
+                                            <div className="flex items-center border-2 border-stone-200 rounded-xl overflow-hidden bg-white order-1 sm:order-2 shadow-sm">
                                                 <button
                                                     onClick={() => handleUpdateQuantity(item.id, item.qty - 1, item.size)}
-                                                    className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-white transition-colors text-stone-400 hover:text-stone-900"
+                                                    className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-stone-100 transition-colors text-stone-600 hover:text-stone-900 font-bold bg-stone-50"
                                                 >
                                                     <svg className="w-4 h-4 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
                                                     </svg>
                                                 </button>
                                                 <span className="w-9 sm:w-10 h-9 sm:h-8 flex items-center justify-center font-bold text-sm min-w-[2.25rem] sm:min-w-[2.5rem]">
@@ -200,20 +200,20 @@ export default function CheckoutPage() {
                                                 <button
                                                     onClick={() => handleUpdateQuantity(item.id, item.qty + 1, item.size)}
                                                     disabled={item.qty >= 15}
-                                                    className={`w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center transition-colors ${item.qty >= 15 ? "text-stone-200 cursor-not-allowed" : "text-stone-400 hover:text-stone-900 hover:bg-white"}`}
+                                                    className={`w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center transition-colors font-bold ${item.qty >= 15 ? "text-stone-300 bg-stone-50 cursor-not-allowed" : "text-stone-600 bg-stone-50 hover:text-stone-900 hover:bg-stone-100"}`}
                                                 >
                                                     <svg className="w-4 h-4 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                                                     </svg>
                                                 </button>
                                             </div>
                                             <button
                                                 onClick={() => handleRemoveItem(item.id, item.size)}
-                                                className="text-stone-300 hover:text-red-600 transition-colors p-1.5 touch-manipulation order-2 sm:order-1"
+                                                className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg p-2 transition-all touch-manipulation order-2 sm:order-1"
                                                 aria-label="Remove item"
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                                                 </svg>
                                             </button>
                                             <p className="text-stone-900 font-black text-[10px] uppercase tracking-widest hidden sm:block order-3">{item.is_preorder ? 'Pre-Order Total' : 'Item Total'}</p>

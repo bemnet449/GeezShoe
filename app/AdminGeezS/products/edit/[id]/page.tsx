@@ -26,7 +26,7 @@ export default function EditProductPage() {
                     <h2 className="text-2xl font-bold text-stone-900 mb-3">Invalid ID</h2>
                     <p className="text-stone-500 mb-8 leading-relaxed">We couldn't find the product you're looking for. It may have been deleted.</p>
                     <Link
-                        href="/Admin/products"
+                        href="/AdminGeezS/products"
                         className="inline-block w-full bg-stone-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-stone-800 transition-all shadow-lg"
                     >
                         Return to List
@@ -40,7 +40,7 @@ export default function EditProductPage() {
         <div className="w-full">
             <main className="p-8">
                 <header className="mb-8 flex items-center space-x-4">
-                    <Link href="/Admin/products" className="p-2 bg-white rounded-lg shadow-sm border border-stone-200 text-stone-600 hover:text-amber-700 transition-all">
+                    <Link href="/AdminGeezS/products" className="p-2 bg-white rounded-lg shadow-sm border border-stone-200 text-stone-600 hover:text-amber-700 transition-all">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
