@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
+export const revalidate = 0; // always fetch fresh data on every request
+
 const COMPANY_INFO_ID = 1;
 
 function normalizePhoneForWhatsApp(phone: string | null | undefined): string {
