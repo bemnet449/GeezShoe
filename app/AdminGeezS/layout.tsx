@@ -1,8 +1,9 @@
 "use client";
 
 import Sidebar from "@/components/Sidebar";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function AdminLayout({
     children,
@@ -10,8 +11,19 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const isLoginPage = pathname === "/AdminGeezS/Login";
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session && !isLoginPage) {
+                router.push("/AdminGeezS/Login");
+            }
+        };
+        checkAuth();
+    }, [isLoginPage, router]);
 
     return (
         <div className="min-h-screen bg-stone-50 flex flex-col lg:flex-row">

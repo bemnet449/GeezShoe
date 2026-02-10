@@ -377,7 +377,10 @@ export default function ProductsPage() {
                                         className="group bg-white rounded-3xl shadow-sm hover:shadow-2xl hover:shadow-amber-100 border border-stone-200 overflow-hidden transition-all duration-300 transform hover:-translate-y-1"
                                     >
                                         {/* Image Container */}
-                                        <div className="relative h-64 bg-stone-100 overflow-hidden">
+                                        <Link
+                                            href={`/AdminGeezS/products/edit/${product.id}`}
+                                            className="relative h-64 bg-stone-100 overflow-hidden block"
+                                        >
                                             {product.image_urls && product.image_urls[0] ? (
                                                 <img
                                                     src={product.image_urls[0]}
@@ -401,17 +404,7 @@ export default function ProductsPage() {
                                                     {product.is_active ? "IN STOCK" : "OUT OF STOCK"}
                                                 </div>
                                             </div>
-
-                                            {/* Quick Overlay Action */}
-                                            <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <Link
-                                                    href={`/AdminGeezS/products/edit/${product.id}`}
-                                                    className="bg-white text-stone-900 px-6 py-2 rounded-full font-bold shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300"
-                                                >
-                                                    Edit Product
-                                                </Link>
-                                            </div>
-                                        </div>
+                                        </Link>
 
                                         {/* Content */}
                                         <div className="p-6">
@@ -458,12 +451,15 @@ export default function ProductsPage() {
                                                 </div>
 
                                                 <button
-                                                    onClick={() => setDeleteModal({
-                                                        isOpen: true,
-                                                        productId: product.id,
-                                                        imageUrls: product.image_urls,
-                                                        productName: product.Name
-                                                    })}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // Prevent card navigation
+                                                        setDeleteModal({
+                                                            isOpen: true,
+                                                            productId: product.id,
+                                                            imageUrls: product.image_urls,
+                                                            productName: product.Name
+                                                        });
+                                                    }}
                                                     className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all group/del"
                                                 >
                                                     <svg className="w-6 h-6 transform group-hover/del:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
