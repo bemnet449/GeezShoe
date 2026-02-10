@@ -24,10 +24,12 @@ export default function ProductsPage() {
     const router = useRouter();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
+    const [gridLoading, setGridLoading] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [cursor, setCursor] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [filterActive, setFilterActive] = useState<"all" | "active" | "inactive">("all");
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; productId: number | null; imageUrls: string[]; productName: string }>({
         isOpen: false,
@@ -42,13 +44,22 @@ export default function ProductsPage() {
         loadProducts(null, true);
     }, []);
 
-    // Reset pagination state when searchQuery or filterActive changes
+    // Debounce search (same behavior as Shop page)
+    useEffect(() => {
+        const t = setTimeout(() => {
+            setDebouncedSearch(searchQuery.trim());
+        }, 300);
+
+        return () => clearTimeout(t);
+    }, [searchQuery]);
+
+    // Reset pagination state when debouncedSearch or filterActive changes
     useEffect(() => {
         setProducts([]);
         setCursor(null);
         setHasMore(true);
         loadProducts(null, true);
-    }, [searchQuery, filterActive]);
+    }, [debouncedSearch, filterActive]);
 
     // Guard IntersectionObserver execution to prevent duplicate fetches
     useEffect(() => {
@@ -75,13 +86,13 @@ export default function ProductsPage() {
     const checkAuth = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            router.push("/Admin/Login");
+            router.push("/AdminGeezS/Login");
         }
     };
 
     async function loadProducts(cursorValue: string | null, isInitial: boolean) {
         if (isInitial) {
-            setLoading(true);
+            setGridLoading(true);
         } else {
             setLoadingMore(true);
         }
@@ -93,10 +104,14 @@ export default function ProductsPage() {
                 .order("created_at", { ascending: false })
                 .limit(PRODUCTS_PER_PAGE);
 
-            if (searchQuery) {
-                query = query.or(
-                    `Name.ilike.%${searchQuery}%,item_number.ilike.%${searchQuery}%`
-                );
+            if (debouncedSearch) {
+                const isNumber = !isNaN(Number(debouncedSearch));
+
+                query = isNumber
+                    ? query.or(
+                        `Name.ilike.%${debouncedSearch}%,item_number.eq.${Number(debouncedSearch)}`
+                    )
+                    : query.ilike("Name", `%${debouncedSearch}%`);
             }
 
             if (filterActive === "active") {
@@ -134,7 +149,8 @@ export default function ProductsPage() {
             console.error("Fetch error:", err);
         } finally {
             if (isInitial) {
-                setLoading(false);
+                setGridLoading(false);
+                setLoading(false); // Update global loading for initial page load
             } else {
                 setLoadingMore(false);
             }
@@ -211,35 +227,9 @@ export default function ProductsPage() {
         }
     };
 
-    // Trigger server fetch on search change
-    useEffect(() => {
-        setProducts([]);
-        setCursor(null);
-        setHasMore(true);
-        loadProducts(null, true);
-    }, [searchQuery]);
 
-    // Trigger server fetch on filter change
-    useEffect(() => {
-        setProducts([]);
-        setCursor(null);
-        setHasMore(true);
-        loadProducts(null, true);
-    }, [filterActive]);
 
-    if (loading && products.length === 0) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-amber-50 to-stone-100">
-                <div className="text-center">
-                    <svg className="animate-spin h-12 w-12 text-amber-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    <p className="text-stone-700 font-medium">Loading products...</p>
-                </div>
-            </div>
-        );
-    }
+
 
     return (
         <div className="w-full relative">
@@ -294,7 +284,7 @@ export default function ProductsPage() {
                         <p className="text-sm text-stone-500">Manage your store's inventory and catalog</p>
                     </div>
                     <Link
-                        href="/Admin/products/add"
+                        href="/AdminGeezS/products/add"
                         className="w-full sm:w-auto bg-amber-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-700 transition-all shadow-md flex items-center justify-center"
                     >
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -358,138 +348,149 @@ export default function ProductsPage() {
                     </div>
 
                     {/* Products Grid */}
-                    {products.length === 0 ? (
-                        <div className="bg-white rounded-3xl shadow-sm border border-stone-200 p-20 text-center">
-                            <div className="w-24 h-24 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <svg className="w-12 h-12 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                    <div className="relative">
+                        {gridLoading && (
+                            <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm rounded-3xl min-h-[400px]">
+                                <svg className="animate-spin h-10 w-10 text-amber-600" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                 </svg>
                             </div>
-                            <h3 className="text-xl font-bold text-stone-800">No products found</h3>
-                            <p className="text-stone-500 mt-2">Try adjusting your filters or search terms.</p>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                                {products.map((product) => (
-                                    <div
-                                        key={product.id}
-                                        className="group bg-white rounded-3xl shadow-sm hover:shadow-2xl hover:shadow-amber-100 border border-stone-200 overflow-hidden transition-all duration-300 transform hover:-translate-y-1"
-                                    >
-                                        {/* Image Container */}
-                                        <Link
-                                            href={`/AdminGeezS/products/edit/${product.id}`}
-                                            className="relative h-64 bg-stone-100 overflow-hidden block"
+                        )}
+
+                        {products.length === 0 ? (
+                            <div className="bg-white rounded-3xl shadow-sm border border-stone-200 p-20 text-center">
+                                <div className="w-24 h-24 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <svg className="w-12 h-12 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-stone-800">No products found</h3>
+                                <p className="text-stone-500 mt-2">Try adjusting your filters or search terms.</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                    {products.map((product) => (
+                                        <div
+                                            key={product.id}
+                                            className="group bg-white rounded-3xl shadow-sm hover:shadow-2xl hover:shadow-amber-100 border border-stone-200 overflow-hidden transition-all duration-300 transform hover:-translate-y-1"
                                         >
-                                            {product.image_urls && product.image_urls[0] ? (
-                                                <img
-                                                    src={product.image_urls[0]}
-                                                    alt={product.Name}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <svg className="w-16 h-16 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                    </svg>
-                                                </div>
-                                            )}
+                                            {/* Image Container */}
+                                            <Link
+                                                href={`/AdminGeezS/products/edit/${product.id}`}
+                                                className="relative h-64 bg-stone-100 overflow-hidden block"
+                                            >
+                                                {product.image_urls && product.image_urls[0] ? (
+                                                    <img
+                                                        src={product.image_urls[0]}
+                                                        alt={product.Name}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center">
+                                                        <svg className="w-16 h-16 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                    </div>
+                                                )}
 
-                                            {/* Status Tag */}
-                                            <div className="absolute top-4 right-4">
-                                                <div className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-md border ${product.is_active
-                                                    ? "bg-green-500/90 text-white border-green-400"
-                                                    : "bg-red-500/90 text-white border-red-400"
-                                                    }`}>
-                                                    {product.is_active ? "IN STOCK" : "OUT OF STOCK"}
+                                                {/* Status Tag */}
+                                                <div className="absolute top-4 right-4">
+                                                    <div className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-md border ${product.is_active
+                                                        ? "bg-green-500/90 text-white border-green-400"
+                                                        : "bg-red-500/90 text-white border-red-400"
+                                                        }`}>
+                                                        {product.is_active ? "IN STOCK" : "OUT OF STOCK"}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </Link>
+                                            </Link>
 
-                                        {/* Content */}
-                                        <div className="p-6">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div className="flex-1">
-                                                    <h3 className="font-bold text-xl text-stone-900 truncate pr-2">
-                                                        {product.Name}
-                                                    </h3>
-                                                    <div className="flex items-center mt-1 space-x-2">
-                                                        <span className="text-[10px] font-bold px-2 py-0.5 bg-stone-100 text-stone-500 rounded uppercase tracking-wider">
-                                                            Qty: {product.item_number}
-                                                        </span>
-                                                        {product.discount && (
-                                                            <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-600 rounded uppercase tracking-wider">
-                                                                Discount Active
+                                            {/* Content */}
+                                            <div className="p-6">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="flex-1">
+                                                        <h3 className="font-bold text-xl text-stone-900 truncate pr-2">
+                                                            {product.Name}
+                                                        </h3>
+                                                        <div className="flex items-center mt-1 space-x-2">
+                                                            <span className="text-[10px] font-bold px-2 py-0.5 bg-stone-100 text-stone-500 rounded uppercase tracking-wider">
+                                                                Qty: {product.item_number}
                                                             </span>
+                                                            {product.discount && (
+                                                                <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-600 rounded uppercase tracking-wider">
+                                                                    Discount Active
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-2xl font-black text-amber-900">
+                                                            <span className="font-bold text-base text-amber-800/60 mr-0.5">ብር</span>{(product.discount && product.discount_price ? product.discount_price : product.real_price).toLocaleString()}
+                                                        </div>
+                                                        {product.discount && (
+                                                            <div className="text-xs text-stone-400 line-through font-bold">
+                                                                <span className="font-normal text-[10px]">ብር</span>{product.real_price.toLocaleString()}
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <div className="text-2xl font-black text-amber-900">
-                                                        <span className="font-bold text-base text-amber-800/60 mr-0.5">ብር</span>{(product.discount && product.discount_price ? product.discount_price : product.real_price).toLocaleString()}
+
+                                                <div className="pt-6 border-t border-stone-100 flex items-center justify-between">
+                                                    <div className="flex -space-x-1">
+                                                        {product.sizes_available?.slice(0, 3).map(s => (
+                                                            <div key={s} className="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-600">
+                                                                {s}
+                                                            </div>
+                                                        ))}
+                                                        {product.sizes_available?.length > 3 && (
+                                                            <div className="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-400">
+                                                                +{product.sizes_available.length - 3}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    {product.discount && (
-                                                        <div className="text-xs text-stone-400 line-through font-bold">
-                                                            <span className="font-normal text-[10px]">ብር</span>{product.real_price.toLocaleString()}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
 
-                                            <div className="pt-6 border-t border-stone-100 flex items-center justify-between">
-                                                <div className="flex -space-x-1">
-                                                    {product.sizes_available?.slice(0, 3).map(s => (
-                                                        <div key={s} className="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-600">
-                                                            {s}
-                                                        </div>
-                                                    ))}
-                                                    {product.sizes_available?.length > 3 && (
-                                                        <div className="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-400">
-                                                            +{product.sizes_available.length - 3}
-                                                        </div>
-                                                    )}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent card navigation
+                                                            setDeleteModal({
+                                                                isOpen: true,
+                                                                productId: product.id,
+                                                                imageUrls: product.image_urls,
+                                                                productName: product.Name
+                                                            });
+                                                        }}
+                                                        className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all group/del"
+                                                    >
+                                                        <svg className="w-6 h-6 transform group-hover/del:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
                                                 </div>
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation(); // Prevent card navigation
-                                                        setDeleteModal({
-                                                            isOpen: true,
-                                                            productId: product.id,
-                                                            imageUrls: product.image_urls,
-                                                            productName: product.Name
-                                                        });
-                                                    }}
-                                                    className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all group/del"
-                                                >
-                                                    <svg className="w-6 h-6 transform group-hover/del:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
                                             </div>
                                         </div>
+                                    ))}
+                                </div>
+
+                                {loadingMore && (
+                                    <div className="flex items-center justify-center py-4">
+                                        <svg className="animate-spin h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
                                     </div>
-                                ))}
-                            </div>
+                                )}
 
-                            {loadingMore && (
-                                <div className="flex items-center justify-center py-4">
-                                    <svg className="animate-spin h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                    </svg>
-                                </div>
-                            )}
+                                <div ref={observerTarget} className="h-10" />
 
-                            <div ref={observerTarget} className="h-10" />
-
-                            {!hasMore && products.length > 0 && (
-                                <div className="text-center py-12">
-                                    <p className="text-stone-500 font-medium">You've reached the end of the product list</p>
-                                </div>
-                            )}
-                        </>
-                    )}
+                                {!hasMore && products.length > 0 && (
+                                    <div className="text-center py-12">
+                                        <p className="text-stone-500 font-medium">You've reached the end of the product list</p>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
                 </div>
             </main>
             <footer className="mt-20 p-8 text-center text-stone-400 text-xs font-medium border-t border-stone-100">

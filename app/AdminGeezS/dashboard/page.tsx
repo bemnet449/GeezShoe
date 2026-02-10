@@ -23,7 +23,7 @@ const AdminDashboard = () => {
     const checkUserAndFetchStats = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            router.push("/Admin/Login");
+            router.push("/AdminGeezS/Login");
             return;
         }
 
@@ -108,7 +108,7 @@ const AdminDashboard = () => {
             {/* Main Actions Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                 {/* Orders Card */}
-                <Link href="/Admin/orders" className="lg:col-span-2 group relative overflow-hidden bg-stone-900 rounded-[2.5rem] p-8 md:p-10 text-white shadow-2xl shadow-stone-900/20 hover:-translate-y-1 transition-all duration-500">
+                <Link href="/AdminGeezS/orders" className="lg:col-span-2 group relative overflow-hidden bg-stone-900 rounded-[2.5rem] p-8 md:p-10 text-white shadow-2xl shadow-stone-900/20 hover:-translate-y-1 transition-all duration-500">
                     <div className="relative z-10 h-full flex flex-col">
                         <div className="flex flex-wrap justify-between items-start gap-4 mb-8 md:mb-12">
                             <div className="p-4 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10">

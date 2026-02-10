@@ -226,7 +226,7 @@ export default function OrderDetailsPage() {
             if (deleteError) throw deleteError;
 
             showToast("Order marked as sold and stock updated", "success");
-            router.push("/Admin/orders");
+            router.push("/AdminGeezS/orders");
         } catch (error) {
             console.error("Error marking as sold:", error);
             showToast("Failed to process order", "error");
@@ -248,7 +248,7 @@ export default function OrderDetailsPage() {
                 showToast("Failed to cancel order", "error");
             } else {
                 showToast("Order cancelled and removed", "success");
-                router.push("/Admin/orders");
+                router.push("/AdminGeezS/orders");
             }
         } catch (err) {
             console.error("Error cancelling order:", err);

@@ -186,7 +186,7 @@ export default function OrdersPage() {
                                     </td>
                                     <td className="px-6 py-5 text-right">
                                         <Link
-                                            href={`/Admin/orders/${order.id}`}
+                                            href={`/AdminGeezS/orders/${order.id}`}
                                             className="text-amber-600 hover:text-amber-700 font-bold text-xs bg-amber-50 px-4 py-2 rounded-lg transition-colors"
                                         >
                                             View Details

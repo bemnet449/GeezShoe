@@ -11,7 +11,7 @@ export default function EditProductPage() {
     const productId = params?.id ? Number(params.id) : undefined;
 
     const handleSuccess = () => {
-        router.push("/Admin/products");
+        router.push("/AdminGeezS/products");
     };
 
     if (!productId) {

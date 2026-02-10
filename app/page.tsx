@@ -57,7 +57,7 @@ export default async function Home() {
           {/* Phase 1: Logo Reveal (Starts 0s, ends 2.5s) */}
           <div className="opacity-0 animate-dramatic-reveal mb-8 md:mb-12 flex flex-col items-center w-full px-1 md:px-4">
             <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 md:gap-8 mb-4">
-              <h1 className="text-[12vw] sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-bold font-cursive text-[#8E4330] tracking-normal drop-shadow-2xl leading-none whitespace-nowrap py-2">
+              <h1 className="text-[12vw] sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-bold  text-[#8E4330] tracking-normal drop-shadow-2xl leading-none whitespace-nowrap py-2">
                 GE'EZ SHOES
               </h1>
               <div className="relative w-[14vw] h-[14vw] sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 xl:w-48 xl:h-48 shrink-0">

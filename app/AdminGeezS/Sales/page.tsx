@@ -26,28 +26,41 @@ export default function SalesPage() {
     const router = useRouter();
 
     const fetchProductInfo = useCallback(async (productIds: string[]) => {
+        if (productIds.length === 0) return;
+
+        const { data, error } = await supabase
+            .from("products")
+            .select('id, "Name", image_urls')
+            .in("id", productIds.map(id => Number(id)));
+
         const infoMap: Record<string, ProductInfo> = {};
 
-        for (const productId of productIds) {
-            const { data, error } = await supabase
-                .from("products")
-                .select('id, "Name", image_urls')
-                .eq("id", productId)
-                .single();
+        // Create a lookup map for faster access
+        const productLookup = data?.reduce((acc, p) => {
+            acc[Number(p.id)] = p;
+            return acc;
+        }, {} as Record<number, any>) || {};
 
-            if (!error && data) {
-                infoMap[productId] = {
+        productIds.forEach(id => {
+            const product = productLookup[Number(id)];
+
+            if (product) {
+                infoMap[id] = {
                     exists: true,
-                    imageUrl: data.image_urls?.[0] || null,
-                    name: data.Name
+                    imageUrl: product.image_urls?.[0] || null,
+                    name: product.Name
                 };
             } else {
-                infoMap[productId] = {
+                infoMap[id] = {
                     exists: false,
                     imageUrl: null,
                     name: "Unknown Product"
                 };
             }
+        });
+
+        if (error) {
+            console.error("Error fetching product info:", error);
         }
 
         setProductInfo(infoMap);
@@ -71,7 +84,7 @@ export default function SalesPage() {
         const checkAuth = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                router.push("/Admin/Login");
+                router.push("/AdminGeezS/Login");
             }
         };
 
@@ -131,8 +144,8 @@ export default function SalesPage() {
                                             key={sale.id}
                                             onClick={() => handleProductClick(sale)}
                                             className={`border-t border-stone-100 transition-all ${index < 10
-                                                    ? "bg-amber-50 hover:bg-amber-100"
-                                                    : "hover:bg-stone-50"
+                                                ? "bg-amber-50 hover:bg-amber-100"
+                                                : "hover:bg-stone-50"
                                                 } ${isAvailable ? "cursor-pointer" : "opacity-60 cursor-not-allowed"}`}
                                         >
                                             <td className="p-4">
