@@ -368,16 +368,16 @@ export default function ShopPage() {
                                                 {/* Crossed-out: original price when discounted, or fake/MSRP when fake_price exists */}
                                                 {(product.discount && product.discount_price != null) && (
                                                     <span className="text-[10px] md:text-sm text-stone-400 line-through font-bold">
-                                                        ${product.real_price}
+                                                        <span className="font-normal text-[8px] md:text-xs">ብር</span> {product.real_price.toLocaleString()}
                                                     </span>
                                                 )}
                                                 {(!product.discount && product.fake_price != null && Number(product.fake_price) > Number(product.real_price)) && (
                                                     <span className="text-[10px] md:text-sm text-stone-400 line-through font-bold">
-                                                        ${product.fake_price}
+                                                        <span className="font-normal text-[8px] md:text-xs">ብር</span> {product.fake_price?.toLocaleString()}
                                                     </span>
                                                 )}
                                                 <span className="text-sm md:text-lg font-black text-stone-900 leading-none">
-                                                    ${product.discount && product.discount_price != null ? product.discount_price : product.real_price}
+                                                    <span className="font-bold text-xs md:text-sm text-stone-500 mr-0.5">ብር</span>{(product.discount && product.discount_price != null ? product.discount_price : product.real_price).toLocaleString()}
                                                 </span>
                                             </div>
                                         </div>

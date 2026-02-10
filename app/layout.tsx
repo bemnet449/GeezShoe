@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Dancing_Script } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import { ToastContainer } from "@/components/Toast";
@@ -11,6 +11,11 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const dancingScript = Dancing_Script({
+  variable: "--font-dancing",
   subsets: ["latin"],
 });
 
@@ -31,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-amber-100 selection:text-amber-900 overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} ${dancingScript.variable} antialiased selection:bg-amber-100 selection:text-amber-900 overflow-x-hidden`}
       >
         <main className="min-h-screen">
           {children}

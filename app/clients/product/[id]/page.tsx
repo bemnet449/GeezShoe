@@ -183,21 +183,21 @@ export default function ProductDetailPage() {
                                         {/* Crossed-out: original/discount price when on sale, fake_price when higher, or base price when preorder */}
                                         {isPreorder ? (
                                             <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
-                                                ${product.discount && product.discount_price != null ? product.discount_price : product.real_price}
+                                                <span className="font-normal text-base md:text-lg">ብር</span> {(product.discount && product.discount_price != null ? product.discount_price : product.real_price).toLocaleString()}
                                             </span>
                                         ) : (product.discount && product.discount_price != null) ? (
                                             <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
-                                                ${product.real_price}
+                                                <span className="font-normal text-base md:text-lg">ብር</span> {product.real_price.toLocaleString()}
                                             </span>
                                         ) : (product.fake_price != null && Number(product.fake_price) > Number(product.real_price)) ? (
                                             <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
-                                                ${product.fake_price}
+                                                <span className="font-normal text-base md:text-lg">ብር</span> {product.fake_price?.toLocaleString()}
                                             </span>
                                         ) : null}
                                         <span className="text-3xl md:text-4xl font-black text-stone-900 italic">
-                                            ${isPreorder
-                                                ? ((product.discount && product.discount_price ? product.discount_price : product.real_price) * 0.9).toFixed(2)
-                                                : (product.discount && product.discount_price ? product.discount_price : product.real_price)
+                                            <span className="font-bold text-xl md:text-2xl text-stone-500 not-italic mr-1">ብር</span>{isPreorder
+                                                ? ((product.discount && product.discount_price ? product.discount_price : product.real_price) * 0.9).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                : (product.discount && product.discount_price ? product.discount_price : product.real_price).toLocaleString()
                                             }
                                         </span>
                                     </div>
@@ -302,7 +302,7 @@ export default function ProductDetailPage() {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex flex-wrap items-center gap-2 mb-1">
                                                     <span className="text-sm md:text-base font-black text-stone-900 group-hover:text-amber-700 transition-colors uppercase tracking-tight">
-                                                        Pre-Order Available
+                                                        Pre-Order Available/ቀድመዉ ይዘዙ
                                                     </span>
                                                     <span className="inline-flex items-center bg-amber-600 text-white text-[9px] md:text-[10px] font-black px-3 py-1 rounded-lg uppercase shadow-sm">
                                                         10% Off

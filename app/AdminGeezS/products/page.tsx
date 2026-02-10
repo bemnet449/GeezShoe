@@ -433,11 +433,11 @@ export default function ProductsPage() {
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="text-2xl font-black text-amber-900">
-                                                        ${product.discount && product.discount_price ? product.discount_price : product.real_price}
+                                                        <span className="font-bold text-base text-amber-800/60 mr-0.5">ብር</span>{(product.discount && product.discount_price ? product.discount_price : product.real_price).toLocaleString()}
                                                     </div>
                                                     {product.discount && (
                                                         <div className="text-xs text-stone-400 line-through font-bold">
-                                                            ${product.real_price}
+                                                            <span className="font-normal text-[10px]">ብር</span>{product.real_price.toLocaleString()}
                                                         </div>
                                                     )}
                                                 </div>

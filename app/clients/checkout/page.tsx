@@ -176,12 +176,12 @@ export default function CheckoutPage() {
                                                     <p className="text-xs sm:text-sm text-stone-500 mb-1 sm:mb-2 font-medium">Size: EU {item.size}</p>
                                                 )}
                                                 <div className="flex flex-wrap items-baseline gap-2">
-                                                    <p className="text-amber-600 font-black text-lg sm:text-xl">${(item.price * item.qty).toFixed(2)}</p>
+                                                    <p className="text-amber-600 font-black text-lg sm:text-xl"><span className="font-bold text-sm sm:text-base text-amber-500/80 mr-0.5">ብር</span>{(item.price * item.qty).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                                     {item.is_preorder && item.original_price && (
-                                                        <p className="text-stone-400 text-xs sm:text-sm line-through font-bold">${(item.original_price * item.qty).toFixed(2)}</p>
+                                                        <p className="text-stone-400 text-xs sm:text-sm line-through font-bold"><span className="font-normal text-[10px] sm:text-xs">ብር</span>{((item.original_price || 0) * item.qty).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                                     )}
                                                 </div>
-                                                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-stone-400 mt-1">Qty: {item.qty} × ${item.price.toFixed(2)}</p>
+                                                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-stone-400 mt-1">Qty: {item.qty} × <span className="font-bold">ብር</span>{item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                             </div>
                                         </div>
                                         <div className="flex flex-row sm:flex-col items-center justify-between sm:items-end sm:justify-between border-t border-stone-100 pt-3 sm:pt-0 sm:border-t-0 gap-3">
@@ -226,7 +226,7 @@ export default function CheckoutPage() {
                             <div className="mt-8 bg-amber-50 rounded-2xl p-6 border-2 border-amber-100 shadow-xl shadow-amber-600/5 transition-transform hover:scale-[1.01] duration-300">
                                 <div className="flex justify-between items-center">
                                     <span className="text-lg font-black text-stone-900 uppercase tracking-widest leading-none">Order Total</span>
-                                    <span className="text-4xl font-black text-amber-600 tracking-tighter italic leading-none">${total.toFixed(2)}</span>
+                                    <span className="text-4xl font-black text-amber-600 tracking-tighter italic leading-none"><span className="font-bold text-2xl text-amber-500/80 not-italic mr-1">ብር</span>{total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                             </div>
                         </div>
@@ -246,7 +246,7 @@ export default function CheckoutPage() {
 
                                 <div>
                                     <label className="block text-xs font-black uppercase tracking-widest text-stone-600 mb-2">
-                                        Full Name *
+                                        Full Name/ ስም*
                                     </label>
                                     <input
                                         type="text"
@@ -261,7 +261,7 @@ export default function CheckoutPage() {
 
                                 <div>
                                     <label className="block text-xs font-black uppercase tracking-widest text-stone-600 mb-2">
-                                        Email Address <span className="font-normal text-stone-400">(Optional)</span>
+                                        Email Address / ኢ-ሜል(ካለ)<span className="font-normal text-stone-400">(Optional)</span>
                                     </label>
                                     <input
                                         type="email"
@@ -274,7 +274,7 @@ export default function CheckoutPage() {
 
                                 <div>
                                     <label className="block text-xs font-black uppercase tracking-widest text-stone-600 mb-2">
-                                        Phone Number *
+                                        Phone Number /ስልክ*
                                     </label>
                                     <input
                                         type="tel"
@@ -289,7 +289,7 @@ export default function CheckoutPage() {
 
                                 <div>
                                     <label className="block text-xs font-black uppercase tracking-widest text-stone-600 mb-2">
-                                        Order Notes <span className="font-normal text-stone-400">(Optional)</span>
+                                        Order Notes /ዝርዝር <span className="font-normal text-stone-400">(Optional)</span>
                                     </label>
                                     <textarea
                                         value={formData.description}
@@ -307,7 +307,7 @@ export default function CheckoutPage() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                         </svg>
-                                        Delivery Address
+                                        Delivery Address / ዴሊቨሪ አድራሻ
                                     </h3>
                                     <label className="flex items-start gap-4 cursor-pointer group select-none">
                                         <div className="relative flex-shrink-0 mt-0.5">
@@ -327,7 +327,7 @@ export default function CheckoutPage() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <span className="text-sm font-black text-stone-900 group-hover:text-amber-700 transition-colors block">
-                                                Delivery within Addis Ababa
+                                                Delivery within Addis Ababa /አዲስ አበባ ዉስጥ
                                             </span>
                                             <p className="text-xs text-stone-600 mt-1 font-medium">
                                                 {formData.isInAddis ? "Fast local delivery within the city" : "Shipping outside Addis — may take longer"}
@@ -337,7 +337,7 @@ export default function CheckoutPage() {
 
                                     <div>
                                         <label className="block text-xs font-black uppercase tracking-widest text-stone-700 mb-2">
-                                            Street, Subcity & Landmark *
+                                            Delivery Location / ዴሊቨሪ ቦታ*
                                         </label>
                                         <input
                                             type="text"
@@ -373,7 +373,7 @@ export default function CheckoutPage() {
                                             </div>
                                         </div>
                                         <span className="text-sm font-black text-stone-900 group-hover:text-amber-600 transition-colors">
-                                            I have a coupon code
+                                            I have a coupon code / ኩፖን ኮድ አለኝ
                                         </span>
                                     </label>
 
@@ -414,7 +414,7 @@ export default function CheckoutPage() {
                                             Confirming...
                                         </span>
                                     ) : (
-                                        "Place Order Now"
+                                        "Place Order /ይዘዙ"
                                     )}
                                 </button>
 

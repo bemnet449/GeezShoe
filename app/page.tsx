@@ -52,32 +52,23 @@ export default async function Home() {
           />
         </div>
 
-        {/* Big Background Company Name - Watermark style */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full flex justify-center z-5 opacity-0 animate-dramatic-reveal pointer-events-none">
-          <div className="relative w-[98vw] h-[25vw] opacity-5 grayscale invert brightness-200">
-            <Image
-              src="/LogoBrown.PNG"
-              alt="Geez Shoe Watermark"
-              fill
-              sizes="95vw"
-              className="object-contain"
-            />
-          </div>
-        </div>
-
         {/* Main Brand Content - Centered */}
         <div className="container mx-auto px-6 relative z-10 flex flex-col items-center justify-center text-center -mt-24 sm:-mt-12 md:-mt-24">
           {/* Phase 1: Logo Reveal (Starts 0s, ends 2.5s) */}
-          <div className="opacity-0 animate-dramatic-reveal mb-4 md:mb-2 flex flex-col items-center w-full px-1 md:px-4">
-            <div className="relative w-full max-w-[90vw] h-[290px] sm:max-w-[900px] sm:h-[280px] md:max-w-[1200px] md:h-[380px] lg:max-w-[1500px] lg:h-[480px] mb-0 transition-all duration-500">
-              <Image
-                src="/LogoBrown.PNG"
-                alt="Geez Shoe Logo"
-                fill
-                sizes="(max-width: 640px) 530px, (max-width: 768px) 850px, 1500px"
-                className="object-contain"
-                priority
-              />
+          <div className="opacity-0 animate-dramatic-reveal mb-8 md:mb-12 flex flex-col items-center w-full px-1 md:px-4">
+            <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 md:gap-8 mb-4">
+              <h1 className="text-[12vw] sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-bold font-cursive text-[#8E4330] tracking-normal drop-shadow-2xl leading-none whitespace-nowrap py-2">
+                GE'EZ SHOES
+              </h1>
+              <div className="relative w-[14vw] h-[14vw] sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 xl:w-48 xl:h-48 shrink-0">
+                <Image
+                  src="/Logofavicon.PNG"
+                  alt="Geez Shoe Icon"
+                  fill
+                  className="object-contain drop-shadow-2xl"
+                  priority
+                />
+              </div>
             </div>
             <div className="relative -mt-4 md:-mt-8 z-10">
               <div className="absolute inset-0 bg-black/5 blur-xl rounded-full"></div>

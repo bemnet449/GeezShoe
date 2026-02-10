@@ -10,6 +10,7 @@
     --color-foreground: var(--foreground);
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
+    --font-cursive: var(--font-dancing);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -67,6 +68,7 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
