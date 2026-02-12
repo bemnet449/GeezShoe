@@ -13,11 +13,12 @@ interface Product {
     fake_price: number | null;
     discount: boolean;
     discount_price: number | null;
+    discount_title: string | null;
     image_urls: string[];
     is_active: boolean;
 }
 
-const PRODUCTS_PER_PAGE = 4; // Number of products per page
+const PRODUCTS_PER_PAGE = 8; // Number of products per page
 
 export default function ShopPage() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -136,7 +137,7 @@ export default function ShopPage() {
 
             let query = supabase
                 .from("products")
-                .select("id, Name, description, real_price, fake_price, discount, discount_price, image_urls, is_active")
+                .select("id, Name, description, real_price, fake_price, discount, discount_price, discount_title, image_urls, is_active")
                 .order("created_at", { ascending: false });
 
             // Apply search filter

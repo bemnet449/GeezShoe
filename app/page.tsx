@@ -150,7 +150,7 @@ export default async function Home() {
                   Founded in Addis Ababa, Ge’ez Shoes is a handmade leather footwear brand rooted in Ethiopian craftsmanship and pride.
                 </p>
                 <p>
-                  For nearly five years, we have been creating high-quality leather shoes that balance timeless style, comfort, and durability. Each pair is carefully handcrafted by skilled local artisans using genuine leather and modern techniques.
+                  Since 2019, we have been creating high-quality leather shoes that balance timeless style, comfort, and durability. Each pair is carefully handcrafted by skilled local artisans using genuine leather and modern techniques.
                 </p>
                 <p>
                   From sourcing materials to final sale, we manage every step to ensure consistent quality and authentic design. What started as a small workshop has grown into a trusted local brand with loyal customers across Addis Ababa.
@@ -197,7 +197,7 @@ export default async function Home() {
             <div className="w-full">
               <div className="w-full h-[400px] lg:h-[600px] rounded-[2rem] overflow-hidden shadow-2xl border border-stone-700/50">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.491438826744!2d38.8004016!3d9.018854!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b852bfffabc33%3A0x2d49dd5bd95bdee4!2zR2UnZXogc2hvZXMg4YyN4YuV4YudIOGMq-GImw!5e0!3m2!1sen!2set!4v1770882512590!5m2!1sen!2set"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.491438826744!2d38.8004016!3d9.018854!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b852bfffabc33%3A0x2d49dd5bd95bdee4!2zR2UnZXogc2hvZXMg4YyN4YuV4YudIOGMq-GImw!5e0!3m2!1sen!2set!4v1770882512590!5m2!1sen!2set&t=k"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}

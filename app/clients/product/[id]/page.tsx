@@ -15,6 +15,7 @@ interface Product {
     fake_price: number | null;
     discount: boolean;
     discount_price: number | null;
+    discount_title: string | null;
     image_urls: string[];
     sizes_available: number[];
     is_active: boolean;
@@ -38,7 +39,7 @@ export default function ProductDetailPage() {
             setLoading(true);
             const { data, error } = await supabase
                 .from("products")
-                .select("id, Name, description, real_price, fake_price, discount, discount_price, image_urls, sizes_available, is_active")
+                .select("id, Name, description, real_price, fake_price, discount, discount_price, discount_title, image_urls, sizes_available, is_active")
                 .eq("id", id)
                 .single();
 
@@ -54,6 +55,41 @@ export default function ProductDetailPage() {
         loadProduct();
     }, [id, router]);
 
+    // Auto-advance product images on both mobile and desktop
+    useEffect(() => {
+        if (!product || !product.image_urls || product.image_urls.length <= 1) return;
+
+        const interval = window.setInterval(() => {
+            setActiveImage(prev => {
+                const total = product.image_urls.length;
+                return (prev + 1) % total;
+            });
+        }, 4500);
+
+        return () => window.clearInterval(interval);
+    }, [product]);
+
+    // Lock body scroll and handle ESC key while image modal is open
+    useEffect(() => {
+        if (!isModalOpen) return;
+
+        const originalOverflow = document.body.style.overflow;
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setIsModalOpen(false);
+            }
+        };
+
+        document.body.style.overflow = "hidden";
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.body.style.overflow = originalOverflow;
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isModalOpen]);
+
     return (
         <div className="min-h-screen bg-stone-50 overflow-x-hidden w-full">
             <ShopNavbar />
@@ -67,18 +103,24 @@ export default function ProductDetailPage() {
                     {/* Image Preview Modal */}
                     {isModalOpen && (
                         <div
-                            className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/95 backdrop-blur-xl animate-in fade-in duration-300"
+                            className="fixed inset-0 z-[9999] flex items-center justify-center bg-stone-950/95 backdrop-blur-xl animate-in fade-in duration-300"
                             onClick={() => setIsModalOpen(false)}
                         >
                             <button
                                 className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors"
-                                onClick={() => setIsModalOpen(false)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsModalOpen(false);
+                                }}
                             >
                                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
-                            <div className="relative w-full max-w-5xl aspect-square mx-6">
+                            <div
+                                className="relative w-full max-w-5xl aspect-square mx-6"
+                                onClick={(e) => e.stopPropagation()}
+                            >
                                 <img
                                     src={product.image_urls[activeImage]}
                                     alt={product.Name}
@@ -134,9 +176,9 @@ export default function ProductDetailPage() {
                                     )}
 
                                     {/* Prominent Sale Tag */}
-                                    {product.discount && (
+                                    {product.discount && product.discount_title && product.discount_title.trim().length > 0 && (
                                         <div className="absolute top-4 left-4 md:top-8 md:left-8 bg-amber-600 text-white text-[8px] md:text-[10px] font-black px-4 md:px-6 py-1.5 md:py-2 rounded-full z-10 shadow-lg uppercase tracking-[0.1em] md:tracking-[0.2em] animate-bounce">
-                                            Exclusive Offer
+                                            {product.discount_title}
                                         </div>
                                     )}
                                 </div>
@@ -171,9 +213,9 @@ export default function ProductDetailPage() {
                                                 Out of Stock
                                             </span>
                                         )}
-                                        {product.discount && (
+                                        {product.discount && product.discount_title && product.discount_title.trim().length > 0 && (
                                             <span className="bg-amber-100 text-amber-900 text-[8px] md:text-[10px] font-black px-2 md:px-3 py-0.5 md:py-1 rounded-full uppercase tracking-widest">
-                                                On Sale
+                                                {product.discount_title}
                                             </span>
                                         )}
                                     </div>

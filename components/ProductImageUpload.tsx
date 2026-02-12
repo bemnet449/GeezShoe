@@ -50,6 +50,17 @@ export default function ProductImageUpload({
     onUploadComplete(validUrls);
   };
 
+  const deleteFromStorage = async (publicUrl: string) => {
+    const path = publicUrl.split("/storage/v1/object/public/product-images/")[1];
+    if (!path) return;
+
+    const { error } = await supabase.storage.from("product-images").remove([path]);
+    if (error) {
+      console.error("Failed to delete old product image from storage:", error);
+      throw error;
+    }
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, slotIndex: 0 | 1 | 2) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -89,6 +100,18 @@ export default function ProductImageUpload({
       const safeName = productName.trim().replace(/[^a-z0-9]/gi, '-').toLowerCase();
       const fileName = `shoes/${safeName}/${timestamp}-${randomStr}.webp`;
 
+      // Delete old image in this slot first to avoid orphans
+      if (slots[slotIndex]) {
+        try {
+          await deleteFromStorage(slots[slotIndex]!);
+        } catch (deleteError) {
+          console.error("Failed to delete existing product image before upload:", deleteError);
+          newErrors[slotIndex] = "Could not remove previous image. Please try again.";
+          setErrors(newErrors);
+          return;
+        }
+      }
+
       // Upload with 3-day cache
       const { error: uploadError } = await supabase.storage
         .from("product-images")
@@ -105,14 +128,6 @@ export default function ProductImageUpload({
 
       const publicUrl = publicUrlData.publicUrl;
 
-      // Delete old image in this slot to save storage
-      if (slots[slotIndex]) {
-        const oldPath = slots[slotIndex].split("/storage/v1/object/public/product-images/")[1];
-        if (oldPath) {
-          await supabase.storage.from("product-images").remove([oldPath]);
-        }
-      }
-
       const newSlots = [...slots];
       newSlots[slotIndex] = publicUrl;
       setSlots(newSlots);
@@ -120,7 +135,7 @@ export default function ProductImageUpload({
 
     } catch (err) {
       console.error("Upload failed:", err);
-      newErrors[slotIndex] = "Upload failed. Try again.";
+      newErrors[slotIndex] = err instanceof Error ? err.message : "Upload failed. Try again.";
       setErrors(newErrors);
     } finally {
       setUploadingState(prev => {
@@ -132,7 +147,21 @@ export default function ProductImageUpload({
     }
   };
 
-  const handleRemove = (slotIndex: 0 | 1 | 2) => {
+  const handleRemove = async (slotIndex: 0 | 1 | 2) => {
+    const currentUrl = slots[slotIndex];
+    const newErrors = [...errors] as [string, string, string];
+
+    if (currentUrl) {
+      try {
+        await deleteFromStorage(currentUrl);
+      } catch (error) {
+        console.error("Remove image failed:", error);
+        newErrors[slotIndex] = "Could not remove image from storage. Try again.";
+        setErrors(newErrors);
+        return;
+      }
+    }
+
     const newSlots = [...slots];
     newSlots[slotIndex] = null;
     setSlots(newSlots);

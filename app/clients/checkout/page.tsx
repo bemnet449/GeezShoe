@@ -325,7 +325,7 @@ export default function CheckoutPage() {
 
                                 <div>
                                     <label className="block text-xs font-black uppercase tracking-widest text-stone-600 mb-2">
-                                        Order Notes /ዝርዝር <span className="font-normal text-stone-400">(Optional)</span>
+                                        Order Notes /ተጨማሪ ዝርዝር<span className="font-normal text-stone-400">(Optional)</span>
                                     </label>
                                     <textarea
                                         value={formData.description}
@@ -365,9 +365,13 @@ export default function CheckoutPage() {
                                             <span className="text-sm font-black text-stone-900 group-hover:text-amber-700 transition-colors block">
                                                 Delivery within Addis Ababa /አዲስ አበባ ዉስጥ
                                             </span>
-                                            <p className="text-xs text-stone-600 mt-1 font-medium">
-                                                {formData.isInAddis ? "Fast local delivery within the city" : "Shipping outside Addis — may take longer"}
-                                            </p>
+                                            
+                                            {!formData.isInAddis && (
+                                                <p className="mt-2 text-sm md:text-base text-red-600 font-bold">
+                                                Outside of Addis contains postal delivery fee.
+                                              </p>
+                                              
+                                            )}
                                         </div>
                                     </label>
 

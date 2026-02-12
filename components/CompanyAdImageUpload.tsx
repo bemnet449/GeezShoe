@@ -42,8 +42,12 @@ export default function CompanyImageUpload({
 
   const deleteFromStorage = async (publicUrl: string) => {
     const path = publicUrl.split(`/storage/v1/object/public/${BUCKET}/`)[1];
-    if (path) {
-      await supabase.storage.from(BUCKET).remove([path]);
+    if (!path) return;
+
+    const { error } = await supabase.storage.from(BUCKET).remove([path]);
+    if (error) {
+      console.error("Failed to delete company ad image from storage:", error);
+      throw error;
     }
   };
 
