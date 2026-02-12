@@ -345,15 +345,16 @@ export default function CheckoutPage() {
                                         </svg>
                                         Delivery Address / ዴሊቨሪ አድራሻ
                                     </h3>
+                                    {/* Inside Addis Ababa */}
                                     <label className="flex items-start gap-4 cursor-pointer group select-none">
                                         <div className="relative flex-shrink-0 mt-0.5">
                                             <input
                                                 type="checkbox"
-                                                checked={formData.isInAddis}
-                                                onChange={(e) => setFormData({ ...formData, isInAddis: e.target.checked })}
+                                                checked={formData.isInAddis === true}
+                                                onChange={() => setFormData({ ...formData, isInAddis: true })}
                                                 className="peer sr-only"
                                             />
-                                            <div className={`w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300 group-hover:border-amber-500 ${formData.isInAddis ? 'bg-amber-600 border-amber-600' : 'bg-white border-amber-200'}`}>
+                                            <div className={`w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300 group-hover:border-amber-500 ${formData.isInAddis ? "bg-amber-600 border-amber-600" : "bg-white border-amber-200"}`}>
                                                 {formData.isInAddis && (
                                                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -363,14 +364,36 @@ export default function CheckoutPage() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <span className="text-sm font-black text-stone-900 group-hover:text-amber-700 transition-colors block">
-                                                Delivery within Addis Ababa /አዲስ አበባ ዉስጥ
+                                                Delivery within Addis Ababa / አዲስ አበባ ዉስጥ
                                             </span>
-                                            
+                                        </div>
+                                    </label>
+
+                                    {/* Outside Addis Ababa */}
+                                    <label className="flex items-start gap-4 cursor-pointer group select-none">
+                                        <div className="relative flex-shrink-0 mt-0.5">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.isInAddis === false}
+                                                onChange={() => setFormData({ ...formData, isInAddis: false })}
+                                                className="peer sr-only"
+                                            />
+                                            <div className={`w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300 group-hover:border-amber-500 ${!formData.isInAddis ? "bg-amber-600 border-amber-600" : "bg-white border-amber-200"}`}>
+                                                {!formData.isInAddis && (
+                                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <span className="text-sm font-black text-stone-900 group-hover:text-amber-700 transition-colors block">
+                                                Delivery Outside Addis Ababa / ከአዲስ አበባ ውጭ
+                                            </span>
                                             {!formData.isInAddis && (
                                                 <p className="mt-2 text-sm md:text-base text-red-600 font-bold">
-                                                Outside of Addis contains postal delivery fee.
-                                              </p>
-                                              
+                                                    Outside of Addis contains postal delivery fee.
+                                                </p>
                                             )}
                                         </div>
                                     </label>
