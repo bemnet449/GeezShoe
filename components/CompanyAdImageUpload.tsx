@@ -139,7 +139,12 @@ export default function CompanyImageUpload({
                 <div className="absolute inset-0 bg-stone-900/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex gap-3 items-center justify-center">
                   <label className="bg-white text-stone-900 px-4 py-2 rounded-xl cursor-pointer text-sm font-bold shadow-lg hover:bg-stone-50 transition-colors">
                     Change
-                    <input type="file" hidden accept="image/*" onChange={(e) => handleFileSelect(e, idx)} />
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(e) => handleFileSelect(e, idx)}
+                    />
                   </label>
                   <button
                     type="button"
@@ -152,7 +157,13 @@ export default function CompanyImageUpload({
               </>
             ) : (
               <label className="flex flex-col items-center justify-center h-full cursor-pointer text-stone-500 hover:text-amber-600 hover:bg-stone-200/50 transition-all gap-2 p-4">
-                <input type="file" hidden accept="image/*" onChange={(e) => handleFileSelect(e, idx)} disabled={isUploading} />
+                <input
+                  type="file"
+                  hidden
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => handleFileSelect(e, idx)}
+                  disabled={isUploading}
+                />
                 {isUploading ? (
                   <svg className="animate-spin h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

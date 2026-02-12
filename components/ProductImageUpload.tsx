@@ -196,7 +196,7 @@ export default function ProductImageUpload({
                         Change
                         <input
                           type="file"
-                          accept="image/*"
+                          accept="image/jpeg,image/png,image/webp"
                           className="hidden"
                           onChange={(e) => handleFileSelect(e, slotIndex)}
                           disabled={isUploading}
@@ -216,7 +216,7 @@ export default function ProductImageUpload({
                   <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer p-4">
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp"
                       className="hidden"
                       onChange={(e) => handleFileSelect(e, slotIndex)}
                       disabled={isUploading}
