@@ -288,7 +288,7 @@ export default function ShopPage() {
                             <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                             </svg>
-                            {showOnlyDiscounts ? "Showing Offers" : "Show Offers"}
+                            {showOnlyDiscounts ? "Showing Offers/ቅናሽ" : "Show Offers/ቅናሽ"}
                         </button>
 
                         <div className="relative w-full sm:w-80">
@@ -386,9 +386,7 @@ export default function ShopPage() {
                                             <div className="w-full text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] py-2.5 md:py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-stone-200 text-center bg-stone-900 group-hover:bg-amber-600">
                                                 Buy Now
                                             </div>
-                                            <span className="text-[8px] md:text-[9px] uppercase font-black text-stone-400 tracking-[0.2em] md:tracking-[0.3em] opacity-50 group-hover:opacity-100 group-hover:text-amber-600 transition-all">
-                                                View Details
-                                            </span>
+
                                         </div>
                                     </div>
                                 </Link>

@@ -99,6 +99,8 @@ export default function CheckoutPage() {
     };
 
     const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+    const subtotal = cart.reduce((sum, item) => sum + (item.original_price || item.price) * item.qty, 0);
+    const totalSavings = subtotal - total;
 
     if (orderSuccess) {
         return (
@@ -171,13 +173,14 @@ export default function CheckoutPage() {
                                                         </span>
                                                     </div>
                                                 )}
-                                                <h3 className="font-bold text-stone-900 text-base sm:text-lg mb-1 uppercase tracking-tight leading-tight break-words">{item.name}</h3>
+                                                <h3 className="font-bold text-stone-900 text-base sm:text-lg mb-2 uppercase tracking-tight leading-tight break-words">{item.name}</h3>
                                                 {item.size && (
                                                     <p className="text-xs sm:text-sm text-stone-500 mb-1 sm:mb-2 font-medium">Size: EU {item.size}</p>
                                                 )}
-                                                <div className="flex flex-wrap items-baseline gap-2">
+                                                <div className="flex flex-wrap items-center gap-2">
                                                     <p className="text-amber-600 font-black text-lg sm:text-xl"><span className="font-bold text-sm sm:text-base text-amber-500/80 mr-0.5">ብር</span>{(item.price * item.qty).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                                                    {item.is_preorder && item.original_price && (
+
+                                                    {item.original_price && item.original_price > item.price && (
                                                         <p className="text-stone-400 text-xs sm:text-sm line-through font-bold"><span className="font-normal text-[10px] sm:text-xs">ብር</span>{((item.original_price || 0) * item.qty).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                                     )}
                                                 </div>
@@ -224,9 +227,42 @@ export default function CheckoutPage() {
 
                             {/* Order Summary Total */}
                             <div className="mt-8 bg-amber-50 rounded-2xl p-6 border-2 border-amber-100 shadow-xl shadow-amber-600/5 transition-transform hover:scale-[1.01] duration-300">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-lg font-black text-stone-900 uppercase tracking-widest leading-none">Order Total</span>
-                                    <span className="text-4xl font-black text-amber-600 tracking-tighter italic leading-none"><span className="font-bold text-2xl text-amber-500/80 not-italic mr-1">ብር</span>{total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                {/* Price Breakdown */}
+                                <div className="space-y-3 mb-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-bold text-stone-600 uppercase tracking-wider">Subtotal/ድምር</span>
+                                        <span className="text-lg font-black text-stone-700"><span className="font-bold text-sm text-stone-500 mr-0.5">ብር</span>{subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    </div>
+
+                                    {totalSavings > 0 && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm font-bold text-emerald-600 uppercase tracking-wider">Discount/ቅናሽ</span>
+                                            <span className="text-lg font-black text-emerald-600">- <span className="font-bold text-sm mr-0.5">ብር</span>{totalSavings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        </div>
+                                    )}
+
+                                    <div className="border-t-2 border-amber-200 pt-3">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-lg font-black text-stone-900 uppercase tracking-widest">Total/ጠቅላላ</span>
+                                            <span className="text-4xl font-black text-amber-600 tracking-tighter italic"><span className="font-bold text-2xl text-amber-500/80 not-italic mr-1">ብር</span>{total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Trust Tags in Total Card */}
+                                <div className="flex flex-wrap gap-2 pt-4 border-t border-amber-200">
+                                    <div className="flex items-center gap-2 bg-emerald-500 text-white px-3 py-1.5 rounded-lg shadow-md">
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">Free Delivery/ነፃ ዴሊቨሪ</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 bg-sky-500 text-white px-3 py-1.5 rounded-lg shadow-md">
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">Pay on Delivery/ሲደርስ ይክፈሉ</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -234,7 +270,7 @@ export default function CheckoutPage() {
                         {/* Customer Form Column */}
                         <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl border border-stone-100 shadow-stone-200/50">
                             <h2 className="text-2xl md:text-3xl font-black text-stone-900 mb-2 uppercase tracking-tight">
-                                Customer Information
+                                Customer Information/የማዘዣ ቦታ
                             </h2>
                             <p className="text-sm text-stone-500 mb-6 font-medium">Enter your details for delivery</p>
                             <form onSubmit={handleSubmit} className="space-y-6">

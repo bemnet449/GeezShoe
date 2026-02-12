@@ -114,10 +114,9 @@ export default function ProductDetailPage() {
 
                     <div className="pt-32 pb-24 container mx-auto px-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16">
-                            {/* Images Gallery */}
                             <div className="space-y-4 md:space-y-6">
                                 <div
-                                    className="relative aspect-square overflow-hidden rounded-[2rem] md:rounded-[2.5rem] bg-white border border-stone-100 shadow-xl shadow-stone-200/50 cursor-zoom-in group"
+                                    className="relative aspect-[3/4] md:aspect-square overflow-hidden rounded-[2rem] md:rounded-[2.5rem] bg-white border border-stone-100 shadow-xl shadow-stone-200/50 cursor-zoom-in group"
                                     onClick={() => setIsModalOpen(true)}
                                 >
                                     {product.image_urls?.[activeImage] ? (
@@ -126,7 +125,7 @@ export default function ProductDetailPage() {
                                             alt={product.Name}
                                             loading="lazy"
                                             decoding="async"
-                                            className="w-full h-full object-cover animate-in fade-in zoom-in-95 duration-500 group-hover:scale-105 transition-transform duration-700"
+                                            className="w-full h-full object-contain md:object-cover animate-in fade-in zoom-in-95 duration-500 group-hover:scale-105 transition-transform duration-700"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-stone-300">
@@ -179,27 +178,77 @@ export default function ProductDetailPage() {
                                         )}
                                     </div>
                                     <h1 className="text-3xl md:text-5xl font-black text-stone-900 mb-3 md:mb-4 tracking-tight leading-tight uppercase">{product.Name}</h1>
-                                    <div className="flex flex-wrap items-baseline gap-3 md:gap-4 mb-4 md:mb-6">
+
+                                    {/* trust tags - More Visible Contrast */}
+                                    <div className="flex flex-wrap gap-2 mb-8">
+                                        <div className="flex items-center gap-2 bg-emerald-500 text-white px-3.5 py-2 rounded-xl shadow-lg shadow-emerald-500/20 border border-emerald-400/20">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">ነፃ ዴሊቨሪ</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-sky-500 text-white px-3.5 py-2 rounded-xl shadow-lg shadow-sky-500/20 border border-sky-400/20">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">ሲደርስ ይክፈሉ</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-4 md:mb-6">
                                         {/* Crossed-out: original/discount price when on sale, fake_price when higher, or base price when preorder */}
-                                        {isPreorder ? (
-                                            <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
-                                                <span className="font-normal text-base md:text-lg">ብር</span> {(product.discount && product.discount_price != null ? product.discount_price : product.real_price).toLocaleString()}
+                                        <div className="flex items-baseline gap-3">
+                                            {isPreorder ? (
+                                                <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
+                                                    <span className="font-normal text-base md:text-lg">ብር</span> {(product.discount && product.discount_price != null ? product.discount_price : product.real_price).toLocaleString()}
+                                                </span>
+                                            ) : (product.discount && product.discount_price != null) ? (
+                                                <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
+                                                    <span className="font-normal text-base md:text-lg">ብር</span> {product.real_price.toLocaleString()}
+                                                </span>
+                                            ) : (product.fake_price != null && Number(product.fake_price) > Number(product.real_price)) ? (
+                                                <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
+                                                    <span className="font-normal text-base md:text-lg">ብር</span> {product.fake_price?.toLocaleString()}
+                                                </span>
+                                            ) : null}
+
+                                            <span className="text-3xl md:text-4xl font-black text-stone-900 italic">
+                                                <span className="font-bold text-xl md:text-2xl text-stone-500 not-italic mr-1">ብር</span>{isPreorder
+                                                    ? ((product.discount && product.discount_price ? product.discount_price : product.real_price) * 0.9).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                    : (product.discount && product.discount_price ? product.discount_price : product.real_price).toLocaleString()
+                                                }
                                             </span>
-                                        ) : (product.discount && product.discount_price != null) ? (
-                                            <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
-                                                <span className="font-normal text-base md:text-lg">ብር</span> {product.real_price.toLocaleString()}
-                                            </span>
-                                        ) : (product.fake_price != null && Number(product.fake_price) > Number(product.real_price)) ? (
-                                            <span className="text-xl md:text-2xl text-stone-400 line-through font-bold">
-                                                <span className="font-normal text-base md:text-lg">ብር</span> {product.fake_price?.toLocaleString()}
-                                            </span>
-                                        ) : null}
-                                        <span className="text-3xl md:text-4xl font-black text-stone-900 italic">
-                                            <span className="font-bold text-xl md:text-2xl text-stone-500 not-italic mr-1">ብር</span>{isPreorder
-                                                ? ((product.discount && product.discount_price ? product.discount_price : product.real_price) * 0.9).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                                                : (product.discount && product.discount_price ? product.discount_price : product.real_price).toLocaleString()
+                                        </div>
+
+                                        {/* Savings Badge */}
+                                        {(() => {
+                                            const currentPrice = isPreorder
+                                                ? ((product.discount && product.discount_price ? product.discount_price : product.real_price) * 0.9)
+                                                : (product.discount && product.discount_price ? product.discount_price : product.real_price);
+
+                                            let originalPrice = 0;
+                                            if (isPreorder) {
+                                                originalPrice = product.discount && product.discount_price != null ? product.discount_price : product.real_price;
+                                            } else if (product.discount && product.discount_price != null) {
+                                                originalPrice = product.real_price;
+                                            } else if (product.fake_price != null && Number(product.fake_price) > Number(product.real_price)) {
+                                                originalPrice = product.fake_price;
                                             }
-                                        </span>
+
+                                            const savings = originalPrice > currentPrice ? originalPrice - currentPrice : 0;
+
+                                            if (savings > 0) {
+                                                return (
+                                                    <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-2xl text-sm md:text-base font-black uppercase tracking-wider shadow-2xl shadow-orange-500/40 border-2 border-orange-400/50 flex items-center gap-2 animate-pulse">
+                                                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        <span className="text-base md:text-lg">{savings.toLocaleString()} ብር ያተርፋሉ</span>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        })()}
                                     </div>
                                     <p className="text-stone-600 leading-relaxed text-sm md:text-lg max-w-xl font-medium">
                                         {product.description || "Hand-crafted with meticulous attention to detail using the finest Ethiopian leather."}
@@ -321,6 +370,17 @@ export default function ProductDetailPage() {
                                         onClick={() => {
                                             if (!selectedSize) return;
                                             const basePrice = product.discount && product.discount_price ? product.discount_price : product.real_price;
+
+                                            // Calculate original price for savings display
+                                            let originalPriceVal = basePrice;
+                                            if (isPreorder) {
+                                                originalPriceVal = basePrice;
+                                            } else if (product.discount && product.discount_price != null) {
+                                                originalPriceVal = product.real_price;
+                                            } else if (product.fake_price != null && Number(product.fake_price) > Number(product.real_price)) {
+                                                originalPriceVal = product.fake_price;
+                                            }
+
                                             addToCart({
                                                 id: String(product.id),
                                                 name: product.Name,
@@ -329,7 +389,7 @@ export default function ProductDetailPage() {
                                                 size: selectedSize,
                                                 image: product.image_urls?.[0] || "",
                                                 is_preorder: isPreorder,
-                                                original_price: basePrice,
+                                                original_price: originalPriceVal,
                                             });
                                             showToast(isPreorder ? `Pre-order added to cart!` : `Added to cart!`, "success");
                                             setQuantity(1);
@@ -350,6 +410,17 @@ export default function ProductDetailPage() {
                                         onClick={() => {
                                             if (!selectedSize) return;
                                             const basePrice = product.discount && product.discount_price ? product.discount_price : product.real_price;
+
+                                            // Calculate original price for savings display
+                                            let originalPriceVal = basePrice;
+                                            if (isPreorder) {
+                                                originalPriceVal = basePrice;
+                                            } else if (product.discount && product.discount_price != null) {
+                                                originalPriceVal = product.real_price;
+                                            } else if (product.fake_price != null && Number(product.fake_price) > Number(product.real_price)) {
+                                                originalPriceVal = product.fake_price;
+                                            }
+
                                             addToCart({
                                                 id: String(product.id),
                                                 name: product.Name,
@@ -358,7 +429,7 @@ export default function ProductDetailPage() {
                                                 size: selectedSize,
                                                 image: product.image_urls?.[0] || "",
                                                 is_preorder: isPreorder,
-                                                original_price: basePrice,
+                                                original_price: originalPriceVal,
                                             });
                                             router.push("/clients/checkout");
                                         }}

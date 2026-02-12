@@ -87,7 +87,7 @@ export default async function Home() {
               className="group relative inline-flex items-center justify-center px-10 py-4 md:px-12 md:py-5 overflow-hidden font-bold text-white transition-all duration-300 bg-[#A8513B] backdrop-blur-sm rounded-full hover:bg-[#EF6C00] shadow-2xl shadow-orange-900/40 border border-white/10"
             >
               <span className="relative flex items-center space-x-3 uppercase tracking-[0.2em] text-sm">
-                <span>Enter Collection</span>
+                <span>Enter Collection/ይግቡ</span>
                 <svg
                   className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300"
                   fill="none"
@@ -180,25 +180,55 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Contact Section — matches About typography & theme */}
+      {/* Contact Section — Redesigned with Map and Contact Info Side by Side */}
       <section id="contact" className="py-32 bg-stone-900 border-t border-stone-800">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-            {/* Left: same hierarchy as About "Our Story" */}
-            <div>
-              <h2 className="text-[10px] md:text-sm uppercase font-bold tracking-[0.4em] text-amber-600 mb-4 md:mb-6">Get in touch</h2>
-              <h3 className="text-4xl md:text-6xl font-black text-white mb-6 md:mb-10 tracking-tight leading-tight">
-                LET&apos;S STEP <br className="hidden md:block" /> INTO THE <span className="text-amber-500/90 italic">EXCLUSIVE</span>
-              </h3>
-              <p className="text-stone-400 text-base md:text-lg leading-relaxed max-w-md italic font-medium">
-                Direct paths to our artisans. Whether by message or call, we are here to guide your choice.
-              </p>
-              <div className="mt-8 pt-8 border-t border-stone-800">
-                <p className="text-stone-500 text-sm italic font-medium">Ge&apos;ez Shoes — Handmade with purpose. Worn with pride.</p>
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <h2 className="text-[10px] md:text-sm uppercase font-bold tracking-[0.4em] text-amber-600 mb-4">Get in touch</h2>
+            <h3 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
+              CONTACT US
+            </h3>
+          </div>
+
+          {/* Two Column Layout: Map + Contact Info */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+            {/* Left: Google Maps */}
+            <div className="w-full">
+              <div className="w-full h-[400px] lg:h-[600px] rounded-[2rem] overflow-hidden shadow-2xl border border-stone-700/50">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.491438826744!2d38.8004016!3d9.018854!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b852bfffabc33%3A0x2d49dd5bd95bdee4!2zR2UnZXogc2hvZXMg4YyN4YuV4YudIOGMq-GImw!5e0!3m2!1sen!2set!4v1770882512590!5m2!1sen!2set"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Ge'ez Shoes Location"
+                ></iframe>
+              </div>
+
+              <div className="flex justify-center mt-8">
+                <a
+                  href="https://maps.google.com/?q=9.018854,38.8004016"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative inline-flex items-center justify-center gap-3 bg-amber-600 hover:bg-amber-500 text-white px-8 py-4 rounded-full font-black uppercase tracking-widest text-sm transition-all duration-300 shadow-lg shadow-amber-900/40 hover:shadow-amber-600/40 hover:-translate-y-1"
+                >
+                  <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Get Directions</span>
+                  <div className="w-px h-4 bg-white/30 mx-1"></div>
+                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </a>
               </div>
             </div>
 
-            {/* Right: contact cards — stone/amber, rounded-[2rem] like About */}
+            {/* Right: Contact Cards */}
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {/* WhatsApp — primary CTA, brand orange hover */}
               <a
