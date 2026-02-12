@@ -55,20 +55,6 @@ export default function ProductDetailPage() {
         loadProduct();
     }, [id, router]);
 
-    // Auto-advance product images on both mobile and desktop
-    useEffect(() => {
-        if (!product || !product.image_urls || product.image_urls.length <= 1) return;
-
-        const interval = window.setInterval(() => {
-            setActiveImage(prev => {
-                const total = product.image_urls.length;
-                return (prev + 1) % total;
-            });
-        }, 4500);
-
-        return () => window.clearInterval(interval);
-    }, [product]);
-
     // Lock body scroll and handle ESC key while image modal is open
     useEffect(() => {
         if (!isModalOpen) return;
