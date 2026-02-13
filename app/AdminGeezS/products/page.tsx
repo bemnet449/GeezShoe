@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-const PRODUCTS_PER_PAGE = 4; // Number of products per page
+const PRODUCTS_PER_PAGE = 8; // Number of products per page
 
 interface Product {
     id: number;

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface SidebarProps {
@@ -12,6 +13,30 @@ interface SidebarProps {
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     const pathname = usePathname();
     const router = useRouter();
+    const [isMainAdmin, setIsMainAdmin] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        const checkRole = async () => {
+            try {
+                const {
+                    data: { user },
+                    error,
+                } = await supabase.auth.getUser();
+
+                if (error || !user) {
+                    setIsMainAdmin(false);
+                    return;
+                }
+
+                const role = (user.user_metadata as { role?: string } | null)?.role;
+                setIsMainAdmin(role === "main");
+            } catch {
+                // On any unexpected error, safely treat as non-main admin
+                setIsMainAdmin(false);
+            }
+        };
+        checkRole();
+    }, []);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -93,7 +118,16 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 </svg>
             ),
         },
-
+        {
+            name: "Admin Management",
+            path: "/AdminGeezS/adminManagement",
+            icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            ),
+            mainOnly: true,
+        },
     ];
 
     return (
@@ -135,7 +169,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
                 {/* Navigation Items */}
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                    {navItems.map((item) => (
+                    {navItems
+                        .filter((item) => !(item as { mainOnly?: boolean }).mainOnly || isMainAdmin)
+                        .map((item) => (
                         <Link
                             key={item.path}
                             href={item.path}
