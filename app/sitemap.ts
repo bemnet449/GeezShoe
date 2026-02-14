@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { createSupabaseAdmin } from "@/lib/supabaseServer";
+import { createSupabaseAdmin } from "../lib/supabaseServer";
 
 export const runtime = "nodejs";
 
