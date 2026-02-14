@@ -19,12 +19,50 @@ const dancingScript = Dancing_Script({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://www.geezshoes.com");
+
 export const metadata: Metadata = {
-  title: "GeezShoe | Premium Ethiopian Handcrafted Footwear",
-  description: "Discover the finest handcrafted leather shoes from Ethiopia. Timeless craftsmanship meets modern style at GeezShoe.",
-  keywords: ["shoes", "leather shoes", "ethiopian craftsmanship", "handcrafted footwear", "luxury shoes"],
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Geez Shoes – Quality Shoes Online",
+    template: "%s | Geez Shoes",
+  },
+  description:
+    "Shop the best shoes online at Geez Shoes. Free shipping and easy returns.",
+  keywords: [
+    "shoes",
+    "leather shoes",
+    "ethiopian craftsmanship",
+    "handcrafted footwear",
+    "luxury shoes",
+  ],
   icons: {
     icon: "/Logofavicon.PNG",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "Geez Shoes",
+    title: "Geez Shoes – Quality Shoes Online",
+    description:
+      "Shop the best shoes online at Geez Shoes. Free shipping and easy returns.",
+    url: siteUrl,
+    images: [
+      {
+        url: "/Logofavicon.PNG",
+        width: 512,
+        height: 512,
+        alt: "Geez Shoes",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Geez Shoes – Quality Shoes Online",
+    description:
+      "Shop the best shoes online at Geez Shoes. Free shipping and easy returns.",
   },
 };
 

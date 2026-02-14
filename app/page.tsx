@@ -3,8 +3,29 @@ import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import type { Metadata } from "next";
 
 export const revalidate = 0; // always fetch fresh data on every request
+
+export const metadata: Metadata = {
+  title: "Geez Shoes – Quality Shoes Online",
+  description:
+    "Shop the best shoes online at Geez Shoes. Free shipping and easy returns.",
+  openGraph: {
+    title: "Geez Shoes – Quality Shoes Online",
+    description:
+      "Shop the best shoes online at Geez Shoes. Free shipping and easy returns.",
+    url: "/",
+    images: [
+      {
+        url: "/Logofavicon.PNG",
+        width: 512,
+        height: 512,
+        alt: "Geez Shoes",
+      },
+    ],
+  },
+};
 
 const COMPANY_INFO_ID = 1;
 
