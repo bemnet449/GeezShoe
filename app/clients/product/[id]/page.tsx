@@ -466,10 +466,11 @@ export default function ProductDetailPage() {
                                                 currency: "ETB",
                                             });
 
-                                            showToast(
-                                                isPreorder ? `Pre-order added to cart!` : `Added to cart!`,
-                                                "success"
-                                            );
+                                            typeof window !== "undefined" &&
+                                                showToast(
+                                                    isPreorder ? "Pre-order added to cart!" : "Added to cart!",
+                                                    "success"
+                                                );
 
                                             setQuantity(1);
                                             setSelectedSize(null);
