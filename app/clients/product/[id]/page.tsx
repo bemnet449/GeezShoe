@@ -422,13 +422,16 @@ export default function ProductDetailPage() {
                                         onClick={() => {
                                             if (!selectedSize) return;
 
+                                            // 1️⃣ Base price (discount or real)
                                             const basePrice =
                                                 product.discount && product.discount_price != null
                                                     ? product.discount_price
                                                     : product.real_price;
 
+                                            // 2️⃣ Apply preorder discount
                                             const price = isPreorder ? basePrice * 0.9 : basePrice;
 
+                                            // 3️⃣ Determine original price (for strike-through / savings)
                                             let originalPriceVal = basePrice;
 
                                             if (!isPreorder) {
@@ -442,6 +445,7 @@ export default function ProductDetailPage() {
                                                 }
                                             }
 
+                                            // 4️⃣ Cart item object
                                             const cartItem = {
                                                 id: String(product.id),
                                                 name: product.Name,
@@ -462,7 +466,11 @@ export default function ProductDetailPage() {
                                                 currency: "ETB",
                                             });
 
-                                            showToast(isPreorder ? `Pre-order added to cart!` : `Added to cart!`, "success");
+                                            showToast(
+                                                isPreorder ? `Pre-order added to cart!` : `Added to cart!`,
+                                                "success"
+                                            );
+
                                             setQuantity(1);
                                             setSelectedSize(null);
                                             setIsPreorder(false);
@@ -481,13 +489,16 @@ export default function ProductDetailPage() {
                                         onClick={() => {
                                             if (!selectedSize) return;
 
+                                            // 1️⃣ Base price (discount or real)
                                             const basePrice =
                                                 product.discount && product.discount_price != null
                                                     ? product.discount_price
                                                     : product.real_price;
 
+                                            // 2️⃣ Apply preorder discount
                                             const price = isPreorder ? basePrice * 0.9 : basePrice;
 
+                                            // 3️⃣ Determine original price (for strike-through / savings)
                                             let originalPriceVal = basePrice;
 
                                             if (!isPreorder) {
@@ -501,6 +512,7 @@ export default function ProductDetailPage() {
                                                 }
                                             }
 
+                                            // 4️⃣ Cart item object
                                             const cartItem = {
                                                 id: String(product.id),
                                                 name: product.Name,
