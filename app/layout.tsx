@@ -39,7 +39,9 @@ export const metadata: Metadata = {
     "luxury shoes",
   ],
   icons: {
-    icon: "/Logofavicon.PNG",
+    icon: "/favicon.ico", // recommended for browser tabs
+    shortcut: "/favicon.ico",
+    apple: "/Logofavicon.PNG",
   },
   openGraph: {
     type: "website",
@@ -63,6 +65,7 @@ export const metadata: Metadata = {
     title: "Geez Shoes – Quality Shoes Online",
     description:
       "Shop the best shoes online at Geez Shoes. Free shipping and easy returns.",
+    images: ["/Logofavicon.PNG"],
   },
 };
 
@@ -73,12 +76,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Explicit favicons for maximum browser support */}
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/Logofavicon.PNG" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/Logofavicon.PNG" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/Logofavicon.PNG" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${dancingScript.variable} antialiased selection:bg-amber-100 selection:text-amber-900 overflow-x-hidden`}
       >
-        <main className="min-h-screen">
-          {children}
-        </main>
+        <main className="min-h-screen">{children}</main>
         <Footer />
         <ToastContainer />
       </body>
