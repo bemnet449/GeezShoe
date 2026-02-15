@@ -86,6 +86,8 @@ export function ToastContainer() {
     const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
     useEffect(() => {
+        if (typeof window === "undefined") return;
+
         const handleShowToast = (event: CustomEvent) => {
             const { message, type = "success" } = event.detail;
             const id = Date.now();
@@ -114,8 +116,9 @@ export function ToastContainer() {
     );
 }
 
-// Helper function to show toast from anywhere
+// Helper function to show toast from anywhere (SSR-safe: no-ops when window is undefined)
 export function showToast(message: string, type: "success" | "error" | "info" = "success") {
+    if (typeof window === "undefined") return;
     const event = new CustomEvent("showToast", {
         detail: { message, type },
     });
