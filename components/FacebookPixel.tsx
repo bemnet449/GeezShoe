@@ -31,7 +31,7 @@ type FbqFunction = (
 interface FbqStub extends FbqFunction {
   callMethod?: (...args: unknown[]) => void;
   queue: unknown[][];
-  push: (...args: unknown[]) => void;
+  push: FbqFunction;
   loaded?: boolean;
   version?: string;
 }
@@ -87,19 +87,19 @@ function loadPixelScript(pixelId: string): void {
   const e = "script";
   const v = FB_SCRIPT_URL;
 
-  const n = (f.fbq = function (
+  const n = function (
     ...args: [FbqAction, string, Record<string, unknown>?]
   ) {
     (n as FbqStub).callMethod
       ? (n as FbqStub).callMethod!.apply(n, args)
       : (n as FbqStub).queue.push(args);
-  }) as FbqStub;
-
-  if (!f._fbq) f._fbq = n;
+  } as FbqStub;
   n.push = n;
+  n.queue = [] as unknown[][];
   n.loaded = true;
   n.version = "2.0";
-  n.queue = [] as unknown[][];
+  f.fbq = n;
+  if (!f._fbq) f._fbq = n;
 
   const t = b.createElement(e) as HTMLScriptElement;
   t.async = true;
