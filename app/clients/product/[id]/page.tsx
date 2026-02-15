@@ -420,16 +420,34 @@ export default function ProductDetailPage() {
                                     <button
                                         disabled={!selectedSize || (!product.is_active && !isPreorder)}
                                         onClick={() => {
-                                            const basePrice = product.discount && product.discount_price ? product.discount_price : product.real_price;
+                                            if (!selectedSize) return;
+
+                                            const basePrice =
+                                                product.discount && product.discount_price != null
+                                                    ? product.discount_price
+                                                    : product.real_price;
+
                                             const price = isPreorder ? basePrice * 0.9 : basePrice;
-                                            let originalPriceVal = product.discount && product.discount_price != null ? product.real_price : basePrice;
+
+                                            let originalPriceVal = basePrice;
+
+                                            if (!isPreorder) {
+                                                if (product.discount && product.discount_price != null) {
+                                                    originalPriceVal = product.real_price;
+                                                } else if (
+                                                    product.fake_price != null &&
+                                                    Number(product.fake_price) > Number(product.real_price)
+                                                ) {
+                                                    originalPriceVal = product.fake_price;
+                                                }
+                                            }
 
                                             const cartItem = {
                                                 id: String(product.id),
                                                 name: product.Name,
                                                 price,
                                                 qty: quantity,
-                                                size: selectedSize!,
+                                                size: selectedSize,
                                                 image: product.image_urls?.[0] || "",
                                                 is_preorder: isPreorder,
                                                 original_price: originalPriceVal,
@@ -440,11 +458,8 @@ export default function ProductDetailPage() {
                                             trackFacebookEvent("AddToCart", {
                                                 content_ids: [String(product.id)],
                                                 content_name: product.Name,
-                                                content_type: "product",
                                                 value: price,
                                                 currency: "ETB",
-                                                quantity,
-                                                size: selectedSize,
                                             });
 
                                             showToast(isPreorder ? `Pre-order added to cart!` : `Added to cart!`, "success");
@@ -464,16 +479,34 @@ export default function ProductDetailPage() {
                                     <button
                                         disabled={!selectedSize || (!product.is_active && !isPreorder)}
                                         onClick={() => {
-                                            const basePrice = product.discount && product.discount_price ? product.discount_price : product.real_price;
+                                            if (!selectedSize) return;
+
+                                            const basePrice =
+                                                product.discount && product.discount_price != null
+                                                    ? product.discount_price
+                                                    : product.real_price;
+
                                             const price = isPreorder ? basePrice * 0.9 : basePrice;
-                                            let originalPriceVal = product.discount && product.discount_price != null ? product.real_price : basePrice;
+
+                                            let originalPriceVal = basePrice;
+
+                                            if (!isPreorder) {
+                                                if (product.discount && product.discount_price != null) {
+                                                    originalPriceVal = product.real_price;
+                                                } else if (
+                                                    product.fake_price != null &&
+                                                    Number(product.fake_price) > Number(product.real_price)
+                                                ) {
+                                                    originalPriceVal = product.fake_price;
+                                                }
+                                            }
 
                                             const cartItem = {
                                                 id: String(product.id),
                                                 name: product.Name,
                                                 price,
                                                 qty: quantity,
-                                                size: selectedSize!,
+                                                size: selectedSize,
                                                 image: product.image_urls?.[0] || "",
                                                 is_preorder: isPreorder,
                                                 original_price: originalPriceVal,
@@ -484,11 +517,8 @@ export default function ProductDetailPage() {
                                             trackFacebookEvent("InitiateCheckout", {
                                                 content_ids: [String(product.id)],
                                                 content_name: product.Name,
-                                                content_type: "product",
                                                 value: price,
                                                 currency: "ETB",
-                                                quantity,
-                                                size: selectedSize,
                                             });
 
                                             router.push("/clients/checkout");
