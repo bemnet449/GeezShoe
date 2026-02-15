@@ -420,33 +420,23 @@ export default function ProductDetailPage() {
                                     <button
                                         disabled={!selectedSize || (!product.is_active && !isPreorder)}
                                         onClick={() => {
-                                            if (!selectedSize) return;
                                             const basePrice = product.discount && product.discount_price ? product.discount_price : product.real_price;
-
-                                            // Calculate original price for savings display
-                                            let originalPriceVal = basePrice;
-                                            if (isPreorder) {
-                                                originalPriceVal = basePrice;
-                                            } else if (product.discount && product.discount_price != null) {
-                                                originalPriceVal = product.real_price;
-                                            } else if (product.fake_price != null && Number(product.fake_price) > Number(product.real_price)) {
-                                                originalPriceVal = product.fake_price;
-                                            }
-
                                             const price = isPreorder ? basePrice * 0.9 : basePrice;
+                                            let originalPriceVal = product.discount && product.discount_price != null ? product.real_price : basePrice;
 
-                                            addToCart({
+                                            const cartItem = {
                                                 id: String(product.id),
                                                 name: product.Name,
-                                                price: price,
+                                                price,
                                                 qty: quantity,
-                                                size: selectedSize,
+                                                size: selectedSize!,
                                                 image: product.image_urls?.[0] || "",
                                                 is_preorder: isPreorder,
                                                 original_price: originalPriceVal,
-                                            });
+                                            };
 
-                                            // Fire FB Pixel AddToCart
+                                            addToCart(cartItem);
+
                                             trackFacebookEvent("AddToCart", {
                                                 content_ids: [String(product.id)],
                                                 content_name: product.Name,
@@ -474,33 +464,23 @@ export default function ProductDetailPage() {
                                     <button
                                         disabled={!selectedSize || (!product.is_active && !isPreorder)}
                                         onClick={() => {
-                                            if (!selectedSize) return;
                                             const basePrice = product.discount && product.discount_price ? product.discount_price : product.real_price;
-
-                                            // Calculate original price for savings display
-                                            let originalPriceVal = basePrice;
-                                            if (isPreorder) {
-                                                originalPriceVal = basePrice;
-                                            } else if (product.discount && product.discount_price != null) {
-                                                originalPriceVal = product.real_price;
-                                            } else if (product.fake_price != null && Number(product.fake_price) > Number(product.real_price)) {
-                                                originalPriceVal = product.fake_price;
-                                            }
-
                                             const price = isPreorder ? basePrice * 0.9 : basePrice;
+                                            let originalPriceVal = product.discount && product.discount_price != null ? product.real_price : basePrice;
 
-                                            addToCart({
+                                            const cartItem = {
                                                 id: String(product.id),
                                                 name: product.Name,
-                                                price: price,
+                                                price,
                                                 qty: quantity,
-                                                size: selectedSize,
+                                                size: selectedSize!,
                                                 image: product.image_urls?.[0] || "",
                                                 is_preorder: isPreorder,
                                                 original_price: originalPriceVal,
-                                            });
+                                            };
 
-                                            // Fire FB Pixel InitiateCheckout
+                                            addToCart(cartItem);
+
                                             trackFacebookEvent("InitiateCheckout", {
                                                 content_ids: [String(product.id)],
                                                 content_name: product.Name,
