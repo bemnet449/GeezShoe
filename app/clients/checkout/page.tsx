@@ -458,6 +458,10 @@ export default function CheckoutPage() {
 
                                 <button
                                     type="submit"
+                                    data-fb-event="InitiateCheckout"
+                                    data-fb-value={total}
+                                    data-fb-currency="ETB"
+                                    data-fb-content-name="Place Order"
                                     disabled={loading}
                                     className={`w-full py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest text-sm md:text-base transition-all duration-300 ${loading
                                         ? "bg-stone-200 text-stone-400 cursor-not-allowed"

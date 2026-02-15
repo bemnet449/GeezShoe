@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Dancing_Script } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import { ToastContainer } from "@/components/Toast";
+import FacebookPixel from "@/components/FacebookPixel";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -87,6 +88,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${dancingScript.variable} antialiased selection:bg-amber-100 selection:text-amber-900 overflow-x-hidden`}
       >
+        <FacebookPixel />
         <main className="min-h-screen">{children}</main>
         <Footer />
         <ToastContainer />

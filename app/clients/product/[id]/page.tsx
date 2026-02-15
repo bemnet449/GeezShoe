@@ -21,6 +21,15 @@ interface Product {
     is_active: boolean;
 }
 
+
+/** Facebook Pixel Event Tracker */
+const trackFacebookEvent = (eventName: string, options: Record<string, any> = {}) => {
+    if (typeof window !== "undefined" && (window as any).fbq) {
+        (window as any).fbq("track", eventName, options);
+        console.log(`[FB Pixel] Tracked: ${eventName}`, options);
+    }
+};
+
 export default function ProductDetailPage() {
     const params = useParams();
     const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
@@ -54,6 +63,21 @@ export default function ProductDetailPage() {
 
         loadProduct();
     }, [id, router]);
+
+    useEffect(() => {
+        if (!product) return;
+
+        trackFacebookEvent("PageView");
+
+        trackFacebookEvent("ViewContent", {
+            content_ids: [String(product.id)],
+            content_name: product.Name,
+            content_category: "Product",
+            content_type: "product",
+            value: product.discount && product.discount_price ? product.discount_price : product.real_price,
+            currency: "ETB", // Ethiopian Birr
+        });
+    }, [product]);
 
     // Lock body scroll and handle ESC key while image modal is open
     useEffect(() => {
@@ -409,16 +433,30 @@ export default function ProductDetailPage() {
                                                 originalPriceVal = product.fake_price;
                                             }
 
+                                            const price = isPreorder ? basePrice * 0.9 : basePrice;
+
                                             addToCart({
                                                 id: String(product.id),
                                                 name: product.Name,
-                                                price: isPreorder ? basePrice * 0.9 : basePrice,
+                                                price: price,
                                                 qty: quantity,
                                                 size: selectedSize,
                                                 image: product.image_urls?.[0] || "",
                                                 is_preorder: isPreorder,
                                                 original_price: originalPriceVal,
                                             });
+
+                                            // Fire FB Pixel AddToCart
+                                            trackFacebookEvent("AddToCart", {
+                                                content_ids: [String(product.id)],
+                                                content_name: product.Name,
+                                                content_type: "product",
+                                                value: price,
+                                                currency: "ETB",
+                                                quantity,
+                                                size: selectedSize,
+                                            });
+
                                             showToast(isPreorder ? `Pre-order added to cart!` : `Added to cart!`, "success");
                                             setQuantity(1);
                                             setSelectedSize(null);
@@ -449,16 +487,30 @@ export default function ProductDetailPage() {
                                                 originalPriceVal = product.fake_price;
                                             }
 
+                                            const price = isPreorder ? basePrice * 0.9 : basePrice;
+
                                             addToCart({
                                                 id: String(product.id),
                                                 name: product.Name,
-                                                price: isPreorder ? basePrice * 0.9 : basePrice,
+                                                price: price,
                                                 qty: quantity,
                                                 size: selectedSize,
                                                 image: product.image_urls?.[0] || "",
                                                 is_preorder: isPreorder,
                                                 original_price: originalPriceVal,
                                             });
+
+                                            // Fire FB Pixel InitiateCheckout
+                                            trackFacebookEvent("InitiateCheckout", {
+                                                content_ids: [String(product.id)],
+                                                content_name: product.Name,
+                                                content_type: "product",
+                                                value: price,
+                                                currency: "ETB",
+                                                quantity,
+                                                size: selectedSize,
+                                            });
+
                                             router.push("/clients/checkout");
                                         }}
                                         className={`flex items-center justify-center py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${selectedSize && (product.is_active || isPreorder)
