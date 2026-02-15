@@ -22,13 +22,12 @@ interface Product {
 }
 
 
-/** Facebook Pixel Event Tracker */
-const trackFacebookEvent = (eventName: string, options: Record<string, any> = {}) => {
-    if (typeof window !== "undefined" && (window as any).fbq) {
-        (window as any).fbq("track", eventName, options);
-        console.log(`[FB Pixel] Tracked: ${eventName}`, options);
+/** Facebook Pixel: client-only. Only fires when window and fbq exist (SSR-safe). Call from useEffect or event handlers only. */
+function trackFacebookEvent(eventName: string, options: Record<string, unknown> = {}) {
+    if (typeof window !== "undefined" && typeof (window as unknown as { fbq?: (a: string, b: string, c: unknown) => void }).fbq === "function") {
+        (window as unknown as { fbq: (a: string, b: string, c: unknown) => void }).fbq("track", eventName, options);
     }
-};
+}
 
 export default function ProductDetailPage() {
     const params = useParams();
@@ -79,21 +78,17 @@ export default function ProductDetailPage() {
         });
     }, [product]);
 
-    // Lock body scroll and handle ESC key while image modal is open
+    // Lock body scroll and handle ESC key while image modal is open (client-only; no document/window during SSR)
     useEffect(() => {
-        if (!isModalOpen) return;
+        if (!isModalOpen || typeof window === "undefined" || typeof document === "undefined") return;
 
         const originalOverflow = document.body.style.overflow;
-
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === "Escape") {
-                setIsModalOpen(false);
-            }
+            if (event.key === "Escape") setIsModalOpen(false);
         };
 
         document.body.style.overflow = "hidden";
         window.addEventListener("keydown", handleKeyDown);
-
         return () => {
             document.body.style.overflow = originalOverflow;
             window.removeEventListener("keydown", handleKeyDown);

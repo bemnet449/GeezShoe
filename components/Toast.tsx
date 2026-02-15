@@ -86,16 +86,15 @@ export function ToastContainer() {
     const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
     useEffect(() => {
-        if (typeof window === "undefined") return;
-
-        const handleShowToast = (event: CustomEvent) => {
-            const { message, type = "success" } = event.detail;
-            const id = Date.now();
-            setToasts((prev) => [...prev, { id, message, type }]);
-        };
-
-        window.addEventListener("showToast", handleShowToast as EventListener);
-        return () => window.removeEventListener("showToast", handleShowToast as EventListener);
+        if (typeof window !== "undefined") {
+            const handleShowToast = (event: CustomEvent) => {
+                const { message, type = "success" } = event.detail;
+                const id = Date.now();
+                setToasts((prev) => [...prev, { id, message, type }]);
+            };
+            window.addEventListener("showToast", handleShowToast as EventListener);
+            return () => window.removeEventListener("showToast", handleShowToast as EventListener);
+        }
     }, []);
 
     return (
@@ -116,11 +115,12 @@ export function ToastContainer() {
     );
 }
 
-// Helper function to show toast from anywhere (SSR-safe: no-ops when window is undefined)
+/** SSR-safe helper: only dispatches on the client. Safe to call from anywhere (no-ops during SSR). */
 export function showToast(message: string, type: "success" | "error" | "info" = "success") {
-    if (typeof window === "undefined") return;
-    const event = new CustomEvent("showToast", {
-        detail: { message, type },
-    });
-    window.dispatchEvent(event);
+    if (typeof window !== "undefined") {
+        const event = new CustomEvent("showToast", {
+            detail: { message, type },
+        });
+        window.dispatchEvent(event);
+    }
 }
