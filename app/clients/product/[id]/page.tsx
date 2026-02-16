@@ -19,6 +19,7 @@ interface Product {
     image_urls: string[];
     sizes_available: number[];
     is_active: boolean;
+    item_number: number; // Stock quantity
 }
 
 
@@ -47,7 +48,7 @@ export default function ProductDetailPage() {
             setLoading(true);
             const { data, error } = await supabase
                 .from("products")
-                .select("id, Name, description, real_price, fake_price, discount, discount_price, discount_title, image_urls, sizes_available, is_active")
+                .select("id, Name, description, real_price, fake_price, discount, discount_price, discount_title, image_urls, sizes_available, is_active, item_number")
                 .eq("id", id)
                 .single();
 
@@ -213,11 +214,16 @@ export default function ProductDetailPage() {
                                 <div className="mb-6 md:mb-8">
                                     <div className="flex items-center flex-wrap gap-2 md:gap-3 mb-3 md:mb-4">
                                         <h2 className="text-[8px] md:text-[10px] uppercase font-bold tracking-[0.1em] sm:tracking-[0.3em] md:tracking-[0.5em] text-amber-600">Premium Footwear</h2>
-                                        {!product.is_active && (
-                                            <span className="bg-red-600 text-white text-[8px] md:text-[10px] font-black px-3 md:px-4 py-1 md:py-1.5 rounded-full uppercase tracking-widest border border-red-600 shadow-md">
-                                                Out of Stock
-                                            </span>
-                                        )}
+                                        {(() => {
+                                            // Derive stock status from item_number (not just is_active)
+                                            const stock = Number(product.item_number) || 0;
+                                            const isOutOfStock = stock <= 0;
+                                            return isOutOfStock ? (
+                                                <span className="bg-red-600 text-white text-[8px] md:text-[10px] font-black px-3 md:px-4 py-1 md:py-1.5 rounded-full uppercase tracking-widest border border-red-600 shadow-md">
+                                                    Out of Stock
+                                                </span>
+                                            ) : null;
+                                        })()}
                                         {product.discount && product.discount_title && product.discount_title.trim().length > 0 && (
                                             <span className="bg-amber-100 text-amber-900 text-[8px] md:text-[10px] font-black px-2 md:px-3 py-0.5 md:py-1 rounded-full uppercase tracking-widest">
                                                 {product.discount_title}
@@ -334,10 +340,16 @@ export default function ProductDetailPage() {
                                             </span>
                                         )}
                                     </div>
-                                    <div className={`inline-flex items-center gap-3 md:gap-4 bg-white border-2 rounded-xl md:rounded-2xl p-1.5 md:p-2 transition-all duration-300 ${!selectedSize || (!product.is_active && !isPreorder)
-                                        ? 'border-stone-100 opacity-50'
-                                        : 'border-stone-900 shadow-lg'
-                                        }`}>
+                                    {(() => {
+                                        // Derive stock status from item_number
+                                        const stock = Number(product.item_number) || 0;
+                                        const isOutOfStock = stock <= 0;
+                                        const canPurchase = !isOutOfStock || isPreorder;
+                                        return (
+                                            <div className={`inline-flex items-center gap-3 md:gap-4 bg-white border-2 rounded-xl md:rounded-2xl p-1.5 md:p-2 transition-all duration-300 ${!selectedSize || !canPurchase
+                                                ? 'border-stone-100 opacity-50'
+                                                : 'border-stone-900 shadow-lg'
+                                                }`}>
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -361,23 +373,43 @@ export default function ProductDetailPage() {
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                if (selectedSize && quantity < 15) {
+                                                const stock = Number(product.item_number) || 0;
+                                                const maxQuantity = Math.min(15, stock);
+                                                if (selectedSize && quantity < maxQuantity) {
                                                     setQuantity(quantity + 1);
                                                 }
                                             }}
-                                            disabled={!selectedSize || quantity >= 15 || (!product.is_active && !isPreorder)}
-                                            className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-lg md:text-xl transition-all duration-200 ${!selectedSize || quantity >= 15 || (!product.is_active && !isPreorder)
+                                            disabled={(() => {
+                                                const stock = Number(product.item_number) || 0;
+                                                const isOutOfStock = stock <= 0;
+                                                const canPurchase = !isOutOfStock || isPreorder;
+                                                const maxQuantity = Math.min(15, stock);
+                                                return !selectedSize || quantity >= maxQuantity || !canPurchase;
+                                            })()}
+                                            className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center font-black text-lg md:text-xl transition-all duration-200 ${(() => {
+                                                const stock = Number(product.item_number) || 0;
+                                                const isOutOfStock = stock <= 0;
+                                                const canPurchase = !isOutOfStock || isPreorder;
+                                                const maxQuantity = Math.min(15, stock);
+                                                return !selectedSize || quantity >= maxQuantity || !canPurchase;
+                                            })()
                                                 ? 'bg-stone-50 text-stone-200 cursor-not-allowed'
                                                 : 'bg-amber-600 text-white hover:bg-amber-700 cursor-pointer'
                                                 }`}
                                         >
                                             +
                                         </button>
-                                    </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
 
                                 {/* Pre-order Option */}
-                                {!product.is_active && (
+                                {(() => {
+                                    // Show pre-order option when stock is 0
+                                    const stock = Number(product.item_number) || 0;
+                                    const isOutOfStock = stock <= 0;
+                                    return isOutOfStock ? (
                                     <div className="mb-8 p-6 md:p-8 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-200/80 shadow-xl shadow-amber-200/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                         <label className="flex items-start gap-4 cursor-pointer group">
                                             <div className="relative flex-shrink-0 mt-0.5">
@@ -408,7 +440,8 @@ export default function ProductDetailPage() {
                                             </div>
                                         </label>
                                     </div>
-                                )}
+                                    ) : null;
+                                })()}
 
                                 {/* Actions */}
                                 <div className="flex flex-col gap-3 md:gap-4 mb-10 md:mb-12">
@@ -467,7 +500,12 @@ export default function ProductDetailPage() {
                                             setSelectedSize(null);
                                             setIsPreorder(false);
                                         }}
-                                        className={`flex items-center justify-center space-x-3 py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${selectedSize && (product.is_active || isPreorder)
+                                        className={`flex items-center justify-center space-x-3 py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${(() => {
+                                            const stock = Number(product.item_number) || 0;
+                                            const isOutOfStock = stock <= 0;
+                                            const canPurchase = !isOutOfStock || isPreorder;
+                                            return selectedSize && canPurchase;
+                                        })()
                                             ? "bg-stone-900 text-white hover:bg-stone-800 shadow-stone-900/20"
                                             : "bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200 shadow-none"
                                             }`}
@@ -477,8 +515,20 @@ export default function ProductDetailPage() {
                                     </button>
 
                                     <button
-                                        disabled={!selectedSize || (!product.is_active && !isPreorder)}
+                                        disabled={(() => {
+                                            const stock = Number(product.item_number) || 0;
+                                            const isOutOfStock = stock <= 0;
+                                            const canPurchase = !isOutOfStock || isPreorder;
+                                            return !selectedSize || !canPurchase;
+                                        })()}
                                         onClick={() => {
+                                            // Prevent execution if out of stock (unless pre-order)
+                                            const stock = Number(product.item_number) || 0;
+                                            const isOutOfStock = stock <= 0;
+                                            if (!isPreorder && isOutOfStock) {
+                                                showToast("This product is out of stock", "error");
+                                                return;
+                                            }
                                             if (!selectedSize) return;
 
                                             // 1️⃣ Base price (discount or real)
@@ -527,7 +577,12 @@ export default function ProductDetailPage() {
 
                                             router.push("/clients/checkout");
                                         }}
-                                        className={`flex items-center justify-center py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${selectedSize && (product.is_active || isPreorder)
+                                        className={`flex items-center justify-center py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${(() => {
+                                            const stock = Number(product.item_number) || 0;
+                                            const isOutOfStock = stock <= 0;
+                                            const canPurchase = !isOutOfStock || isPreorder;
+                                            return selectedSize && canPurchase;
+                                        })()
                                             ? "bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20"
                                             : "bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200 shadow-none"
                                             }`}

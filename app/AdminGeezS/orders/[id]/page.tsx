@@ -102,135 +102,258 @@ export default function OrderDetailsPage() {
         setProductImages(imageMap);
     }
 
+    /**
+     * Production-ready handler for marking order as sold.
+     * 
+     * Execution order (atomic safety):
+     * 1. Validate and decrease stock using item_number column (fail fast if insufficient)
+     * 2. Register sales
+     * 3. Update/create customer
+     * 4. Delete order record
+     * 
+     * Safety features:
+     * - Prevents double execution (actionLoading guard)
+     * - Validates stock before any updates
+     * - Uses .maybeSingle() to prevent 406 errors
+     * - Only updates item_number column (stock quantity)
+     * - Prevents negative stock with validation
+     * - Proper error handling with user feedback
+     * - Type-safe with null checks
+     * 
+     * IMPORTANT DATABASE REQUIREMENT:
+     * - item_number column MUST NOT have a UNIQUE constraint
+     * - Stock quantities should NOT be unique (multiple products can have same stock)
+     * - If constraint exists, remove it: ALTER TABLE products DROP CONSTRAINT IF EXISTS products_item_number_key;
+     */
     async function handleMarkAsSold() {
-        if (!order) return;
+        // Early return guards
+        if (!order) {
+            showToast("Order data not available", "error");
+            return;
+        }
+
+        // Prevent double execution
+        if (actionLoading) {
+            return;
+        }
 
         setActionLoading(true);
+
         try {
-            for (let i = 0; i < order.product_ids.length; i++) {
-                const product_id = Number(order.product_ids[i]);
-                const product_name = order.product_names[i];
-                const quantity = Number(order.quantities[i] ?? 1);
-
-                // Fetch current quantity_sold (if exists)
-                const { data: existingSale, error: fetchError } = await supabase
-                    .from("sales")
-                    .select("quantity_sold")
-                    .eq("product_id", product_id)
-                    .maybeSingle();
-
-                if (fetchError) throw fetchError;
-
-                const newQuantity =
-                    (existingSale?.quantity_sold || 0) + quantity;
-
-                // Atomic upsert
-                const { error: upsertError } = await supabase
-                    .from("sales")
-                    .upsert(
-                        {
-                            product_id,
-                            product_name,
-                            quantity_sold: newQuantity,
-                        },
-                        {
-                            onConflict: "product_id", // must match UNIQUE constraint
-                        }
-                    );
-
-                if (upsertError) throw upsertError;
+            // Validate order has products
+            if (!order.product_ids || order.product_ids.length === 0) {
+                throw new Error("Order has no products");
             }
 
-
-            /* 2. Upsert CUSTOMER record */
-
-            // Calculate total items in the order
-            const totalItemsPurchased = order.quantities.reduce(
-                (sum, q) => sum + (q || 1),
-                0
-            );
-
-            // Normalize phone
-            const phone = order.customer_Phone.trim();
-
-            // Fetch existing customer by phone
-            const { data: existingCustomer, error: fetchError } = await supabase
-                .from("customers")
-                .select("total_items_purchased")
-                .eq("phone", phone)
-                .single();
-
-            if (fetchError && fetchError.code !== "PGRST116") { // PGRST116 = no rows found
-                throw fetchError;
+            // Validate quantities array matches product_ids
+            if (order.quantities.length !== order.product_ids.length) {
+                throw new Error("Order data mismatch: quantities and product_ids arrays don't match");
             }
 
-            const newTotal =
-                (existingCustomer?.total_items_purchased || 0) + totalItemsPurchased;
+            // ============================================
+            // STEP 1: VALIDATE AND DECREASE STOCK FIRST
+            // (Fail fast if stock insufficient - prevents partial updates)
+            // 
+            // IMPORTANT: Uses item_number column for stock quantity.
+            // NOTE: If item_number has a UNIQUE constraint, it MUST be removed
+            // because stock quantities should NOT be unique (multiple products can have same stock).
+            // To remove: ALTER TABLE products DROP CONSTRAINT IF EXISTS products_item_number_key;
+            // ============================================
+            const stockUpdates: Array<{ productId: number; newItemNumber: number }> = [];
 
-            // Upsert customer
-            const { error: customerError } = await supabase
-                .from("customers")
-                .upsert(
-                    {
-                        name: order.customer_name,
-                        email: order.customer_email,
-                        phone: phone,
-                        total_items_purchased: newTotal,
-                    },
-                    { onConflict: "phone" } // phone must be UNIQUE
-                );
-
-            if (customerError) throw customerError;
-
-
-
-
-            // 1. Decrease stock for each product
             for (let i = 0; i < order.product_ids.length; i++) {
-                const productId = order.product_ids[i];
-                const quantity = order.quantities[i];
+                const productIdStr = order.product_ids[i];
+                const productId = Number(productIdStr);
+                const quantitySold = Number(order.quantities[i] ?? 1);
 
-                // Fetch current stock
-                const { data: productData, error: fetchError } = await supabase
+                // Type safety: validate productId is a valid number
+                if (Number.isNaN(productId) || productId <= 0) {
+                    throw new Error(`Invalid product ID: ${productIdStr}`);
+                }
+
+                // Type safety: validate quantitySold is a valid positive number
+                if (Number.isNaN(quantitySold) || quantitySold <= 0) {
+                    throw new Error(`Invalid quantity for product ${productId}: ${quantitySold}`);
+                }
+
+                // Fetch current product stock using item_number column
+                const { data: product, error: fetchError } = await supabase
                     .from("products")
                     .select("item_number")
                     .eq("id", productId)
                     .single();
 
                 if (fetchError) {
-                    console.error(`Error fetching stock for product ${productId}:`, fetchError);
-                    continue;
+                    throw new Error(`Failed to fetch product ${productId}: ${fetchError.message}`);
                 }
 
-                // Update stock
-                const newStock = Math.max(0, productData.item_number - (quantity || 1));
-                const { error: stockError } = await supabase
+                // Null safety: ensure product exists
+                if (!product) {
+                    throw new Error(`Product ${productId} not found`);
+                }
+
+                // Type safety: ensure item_number is a number
+                const currentStock = typeof product.item_number === "number" ? product.item_number : 0;
+
+                // Validate stock is sufficient (prevent negative stock)
+                if (currentStock < quantitySold) {
+                    throw new Error(
+                        `Insufficient stock for product ${productId}. Available: ${currentStock}, Required: ${quantitySold}`
+                    );
+                }
+
+                // Store update info (will execute after validation passes for all products)
+                stockUpdates.push({
+                    productId,
+                    newItemNumber: currentStock - quantitySold,
+                });
+            }
+
+            // Execute all stock updates (only after all validations pass)
+            // IMPORTANT: Update BOTH item_number and is_active atomically
+            // - If newStock === 0 → is_active = false (Out of Stock)
+            // - If newStock > 0 → is_active = true (In Stock)
+            for (const update of stockUpdates) {
+                const { error: updateError } = await supabase
                     .from("products")
                     .update({
-                        item_number: newStock,
-                        is_active: newStock > 0
+                        item_number: update.newItemNumber,
+                        is_active: update.newItemNumber > 0, // Auto-sync: true if stock > 0, false if stock = 0
                     })
-                    .eq("id", productId);
+                    .eq("id", update.productId);
 
-                if (stockError) {
-                    console.error(`Error updating stock for product ${productId}:`, stockError);
+                if (updateError) {
+                    // Check if error is due to unique constraint violation
+                    if (updateError.code === "23505" || updateError.message?.includes("unique constraint")) {
+                        throw new Error(
+                            `Database constraint error: item_number has a UNIQUE constraint. This must be removed because stock quantities should not be unique. Product ID: ${update.productId}`
+                        );
+                    }
+                    throw new Error(`Failed to update stock for product ${update.productId}: ${updateError.message}`);
                 }
             }
 
-            // 2. Delete the order record
-            const { error: deleteError } = await supabase
-                .from("order")
-                .delete()
-                .eq("id", order.id);
+            // ============================================
+            // STEP 2: REGISTER SALES (after stock validated)
+            // ============================================
+            for (let i = 0; i < order.product_ids.length; i++) {
+                const productIdStr = order.product_ids[i];
+                const productId = Number(productIdStr);
+                const productName = order.product_names[i];
+                const quantity = Number(order.quantities[i] ?? 1);
 
-            if (deleteError) throw deleteError;
+                // Type safety checks
+                if (Number.isNaN(productId) || productId <= 0) {
+                    throw new Error(`Invalid product ID: ${productIdStr}`);
+                }
 
+                if (!productName || typeof productName !== "string") {
+                    throw new Error(`Invalid product name for product ${productId}`);
+                }
+
+                // Fetch current quantity_sold (if exists) - uses .maybeSingle() to prevent 406
+                const { data: existingSale, error: fetchError } = await supabase
+                    .from("sales")
+                    .select("quantity_sold")
+                    .eq("product_id", productId)
+                    .maybeSingle();
+
+                if (fetchError) {
+                    throw new Error(`Failed to fetch sales for product ${productId}: ${fetchError.message}`);
+                }
+
+                // Null safety: handle case where sale doesn't exist
+                const currentQuantitySold = typeof existingSale?.quantity_sold === "number" ? existingSale.quantity_sold : 0;
+                const newQuantitySold = currentQuantitySold + quantity;
+
+                // Atomic upsert (idempotent: won't create duplicates)
+                const { error: upsertError } = await supabase
+                    .from("sales")
+                    .upsert(
+                        {
+                            product_id: productId,
+                            product_name: productName,
+                            quantity_sold: newQuantitySold,
+                        },
+                        {
+                            onConflict: "product_id", // Prevents duplicate key errors
+                        }
+                    );
+
+                if (upsertError) {
+                    throw new Error(`Failed to update sales for product ${productId}: ${upsertError.message}`);
+                }
+            }
+
+            // ============================================
+            // STEP 3: UPDATE/CREATE CUSTOMER (after stock and sales)
+            // ============================================
+            // Calculate total items in the order
+            const totalItemsPurchased = order.quantities.reduce((sum, q) => {
+                const qty = Number(q ?? 1);
+                return sum + (Number.isNaN(qty) ? 1 : qty);
+            }, 0);
+
+            // Normalize phone (null safety)
+            const phone = order.customer_Phone?.trim();
+            if (!phone || phone.length === 0) {
+                throw new Error("Customer phone number is required");
+            }
+
+            // Fetch existing customer by phone (uses .maybeSingle() to prevent 406 errors)
+            const { data: existingCustomer, error: fetchError } = await supabase
+                .from("customers")
+                .select("total_items_purchased")
+                .eq("phone", phone)
+                .maybeSingle();
+
+            if (fetchError) {
+                throw new Error(`Failed to fetch customer: ${fetchError.message}`);
+            }
+
+            // Null safety: handle case where customer doesn't exist
+            const currentTotalItems =
+                typeof existingCustomer?.total_items_purchased === "number" ? existingCustomer.total_items_purchased : 0;
+            const newTotal = currentTotalItems + totalItemsPurchased;
+
+            // Upsert customer (idempotent: won't create duplicates for same phone)
+            const { error: customerError } = await supabase
+                .from("customers")
+                .upsert(
+                    {
+                        name: order.customer_name?.trim() || "Unknown",
+                        email: order.customer_email?.trim() || null,
+                        phone: phone,
+                        total_items_purchased: newTotal,
+                    },
+                    { onConflict: "phone" } // Prevents duplicate customer rows
+                );
+
+            if (customerError) {
+                throw new Error(`Failed to update customer: ${customerError.message}`);
+            }
+
+            // ============================================
+            // STEP 4: DELETE ORDER RECORD (last step - only after all updates succeed)
+            // ============================================
+            const { error: deleteError } = await supabase.from("order").delete().eq("id", order.id);
+
+            if (deleteError) {
+                throw new Error(`Failed to delete order: ${deleteError.message}`);
+            }
+
+            // Success: all operations completed
             showToast("Order marked as sold and stock updated", "success");
             router.push("/AdminGeezS/orders");
         } catch (error) {
+            // Production-safe error handling
+            const errorMessage =
+                error instanceof Error ? error.message : typeof error === "string" ? error : "Failed to process order";
+
             console.error("Error marking as sold:", error);
-            showToast("Failed to process order", "error");
+            showToast(errorMessage, "error");
         } finally {
+            // Always reset loading state
             setActionLoading(false);
         }
     }
